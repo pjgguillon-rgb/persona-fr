@@ -88,6 +88,7 @@ const GAME_MODES = {
 const THEMES = {
   persona: {
     name: 'Persona', icon: '✨',
+    logoBg: '#ffd9c2',
     bg: '#fbf9ff',
     text: '#1e1b3a', textSoft: '#5e5a7e', textMuted: '#9995b8',
     border: '#e6e0f5', borderDark: '#d6cef0',
@@ -103,6 +104,7 @@ const THEMES = {
   },
   classique: {
     name: 'Classique', icon: '☕',
+    logoBg: '#f5e6d3',
     bg: '#faf7f2', text: '#1a1a1a', textSoft: '#6b655c', textMuted: '#a8a299',
     border: '#e5e0d8', borderDark: '#d4cec3',
     card: '#faf7f2', dark: '#1a1a1a',
@@ -116,6 +118,7 @@ const THEMES = {
   },
   sombre: {
     name: 'Minuit', icon: '🌙',
+    logoBg: '#2a2540',
     bg: '#0f0f14', text: '#f0ebe0', textSoft: '#9a9590', textMuted: '#5a554f',
     border: '#2a2832', borderDark: '#3a3844',
     card: '#1a1822', dark: '#f0ebe0',
@@ -130,6 +133,7 @@ const THEMES = {
   },
   fete: {
     name: 'Fête', icon: '🎉',
+    logoBg: '#ffcce0',
     bg: '#fff0f5', text: '#2d0a4e', textSoft: '#6b3e8f', textMuted: '#a988c7',
     border: '#f4c8e0', borderDark: '#e8a8d0',
     card: '#fff0f5', dark: '#2d0a4e',
@@ -144,6 +148,7 @@ const THEMES = {
   },
   retro: {
     name: 'Rétro', icon: '📺',
+    logoBg: '#e8d5a0',
     bg: '#f4e8d0', text: '#3a2817', textSoft: '#7a5a3f', textMuted: '#b89868',
     border: '#d4b896', borderDark: '#c4a478',
     card: '#f4e8d0', dark: '#3a2817',
@@ -625,18 +630,24 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
       <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 20, marginBottom: 32 }}>
         <div style={{
           display: 'inline-block',
-          background: '#ffd9c2',
-          borderRadius: 20,
-          padding: 12,
-          boxShadow: '0 10px 32px rgba(255, 140, 90, 0.2), 0 4px 12px rgba(230, 61, 130, 0.12)',
+          padding: 3,
+          borderRadius: 22,
+          background: 'linear-gradient(135deg, #4a62d8 0%, #b84bde 50%, #e63d82 100%)',
+          boxShadow: '0 10px 32px rgba(184, 75, 222, 0.25), 0 4px 12px rgba(230, 61, 130, 0.15)',
           marginBottom: 4,
-          maxWidth: '100%',
-          lineHeight: 0
+          maxWidth: '100%'
         }}>
-          <img src="/persona-logo.png" alt="PERSONA"
-            onError={(e) => { e.target.style.display = 'none'; const fb = e.target.parentNode.parentNode.querySelector('.persona-fallback'); if (fb) fb.style.display = 'block'; e.target.parentNode.style.display = 'none'; }}
-            style={{ maxWidth: '100%', width: 280, height: 'auto', display: 'block' }}
-          />
+          <div style={{
+            background: theme.logoBg || '#ffd9c2',
+            borderRadius: 19,
+            padding: 14,
+            lineHeight: 0
+          }}>
+            <img src="/persona-logo.png" alt="PERSONA"
+              onError={(e) => { e.target.style.display = 'none'; const fb = e.target.parentNode.parentNode.parentNode.querySelector('.persona-fallback'); if (fb) fb.style.display = 'block'; e.target.parentNode.parentNode.style.display = 'none'; }}
+              style={{ maxWidth: '100%', width: 280, height: 'auto', display: 'block' }}
+            />
+          </div>
         </div>
         <h1 className="persona-fallback qdq-display" style={{
           display: 'none',
@@ -857,29 +868,20 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
   const isHost = room.hostId === playerId;
   const [question, setQuestion] = useState('');
 
-  // Si la partie a déjà commencé, on utilise le mode et le nombre de manches du salon
+  // Le mode de jeu est défini à la création de la partie
   const gameInProgress = (room.settings?.currentRound || 0) > 0;
   const np = room.players.length;
-  const defaultMode = np === 2 ? 'duo' : 'classic';
-  const [questionMode, setQuestionMode] = useState(gameInProgress ? room.settings.questionMode : defaultMode);
-  const [totalRounds, setTotalRounds] = useState(room.settings?.totalRounds || 0);
+  const questionMode = room.settings?.questionMode || 'classic';
+  const [totalRounds, setTotalRounds] = useState(room.settings?.totalRounds || 5);
+  const [customRoundsInput, setCustomRoundsInput] = useState(7);
   const [showModeInfo, setShowModeInfo] = useState(null);
 
-  // Auto-correction : si le mode sélectionné n'est plus dispo pour ce nombre de joueurs
-  useEffect(() => {
-    if (gameInProgress) return;
-    const m = GAME_MODES[questionMode];
-    if (!m) { setQuestionMode(defaultMode); return; }
-    if (m.minPlayers && np < m.minPlayers) setQuestionMode(defaultMode);
-    if (m.maxPlayers && np > m.maxPlayers) setQuestionMode(defaultMode);
-  }, [np, gameInProgress]);
+  // Le mode de jeu est verrouillé dès la création, on ne le change plus automatiquement
 
-  // Si la partie est en cours, forcer le mode utilisé
+  // Sync du nombre de manches depuis le salon
   useEffect(() => {
-    if (gameInProgress && room.settings?.questionMode) {
-      setQuestionMode(room.settings.questionMode);
-    }
-  }, [gameInProgress, room.settings?.questionMode]);
+    setTotalRounds(room.settings?.totalRounds || 0);
+  }, [room.settings?.totalRounds]);
 
   const copyCode = () => {
     navigator.clipboard?.writeText(room.code);
@@ -939,7 +941,7 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
         </div>
       </div>
 
-      <div className="qdq-pop" style={{
+      {!gameInProgress && (<div className="qdq-pop" style={{
         background: theme.name === 'Persona'
           ? 'linear-gradient(135deg, #1a1630 0%, #2d1e4a 50%, #3d1e3a 100%)'
           : theme.dark,
@@ -968,14 +970,28 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
           }}>
             {copied ? <><Check size={14}/> Copié !</> : <><Copy size={14}/> Copier le code</>}
           </button>
-          {gameInProgress && (
-            <div style={{ marginTop: 14, fontSize: 12, color: theme.textMuted, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 14 }}>{GAME_MODES[room.settings.questionMode]?.icon}</span>
-              Mode {GAME_MODES[room.settings.questionMode]?.label} · Manche {room.settings.currentRound}{room.settings.totalRounds > 0 ? `/${room.settings.totalRounds}` : ''}
-            </div>
-          )}
         </div>
-      </div>
+      </div>)}
+
+      {gameInProgress && (
+        <div className="qdq-pop" style={{
+          background: theme.accent + '15',
+          borderRadius: 18, padding: '18px 20px',
+          marginBottom: 24,
+          border: `1.5px solid ${theme.accent}30`,
+          display: 'flex', alignItems: 'center', gap: 12
+        }}>
+          <div style={{ fontSize: 28 }}>{GAME_MODES[room.settings.questionMode]?.icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
+              {GAME_MODES[room.settings.questionMode]?.label}
+            </div>
+            <div className="qdq-display" style={{ fontSize: 20, fontWeight: 700, color: theme.text }}>
+              Manche {room.settings.currentRound}{room.settings.totalRounds > 0 ? ` / ${room.settings.totalRounds}` : ''}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{ marginBottom: 28 }}>
         <div style={{
@@ -1079,43 +1095,77 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
             </button>
           </div>
 
-          {/* Nombre de manches */}
-          <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-            {gameInProgress ? 'Nombre de manches (modifiable)' : 'Durée de la partie'}
-          </div>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-            {[
-              { value: 0, label: 'Libre' },
-              { value: 5, label: '5' },
-              { value: 10, label: '10' },
-              { value: 15, label: '15' },
-              { value: 20, label: '20' }
-            ].map(opt => {
-              const disabled = gameInProgress && opt.value > 0 && opt.value < (room.settings?.currentRound || 0);
-              return (
-                <button key={opt.value}
-                  onClick={() => {
-                    if (disabled) return;
-                    setTotalRounds(opt.value);
-                    if (gameInProgress) onUpdateTotalRounds(opt.value);
-                  }}
-                  disabled={disabled}
-                  className="qdq-btn"
-                  style={{
-                    flex: 1, minWidth: 50, padding: '10px 8px', borderRadius: 12,
-                    background: totalRounds === opt.value ? theme.dark : theme.card,
-                    color: totalRounds === opt.value ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
-                    border: `1.5px solid ${totalRounds === opt.value ? theme.dark : theme.border}`,
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    opacity: disabled ? 0.3 : 1,
-                    fontSize: 13, fontWeight: 700
-                  }}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Nombre de manches : uniquement si partie pas encore commencée */}
+          {!gameInProgress && (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                Durée de la partie
+              </div>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+                {[
+                  { value: 5, label: '5' },
+                  { value: 10, label: '10' },
+                  { value: 15, label: '15' },
+                  { value: 20, label: '20' },
+                  { value: -1, label: 'Perso.' }
+                ].map(opt => {
+                  const isCustom = opt.value === -1;
+                  const isSelected = isCustom
+                    ? (totalRounds !== 0 && ![5, 10, 15, 20].includes(totalRounds))
+                    : totalRounds === opt.value;
+                  return (
+                    <button key={opt.value}
+                      onClick={() => {
+                        if (isCustom) {
+                          // Déclenche l'affichage du champ custom
+                          setTotalRounds(customRoundsInput || 7);
+                        } else {
+                          setTotalRounds(opt.value);
+                        }
+                      }}
+                      className="qdq-btn"
+                      style={{
+                        flex: 1, minWidth: 50, padding: '10px 8px', borderRadius: 12,
+                        background: isSelected ? theme.dark : theme.card,
+                        color: isSelected ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
+                        border: `1.5px solid ${isSelected ? theme.dark : theme.border}`,
+                        cursor: 'pointer',
+                        fontSize: 13, fontWeight: 700
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Champ custom pour personnaliser */}
+              {(totalRounds !== 0 && ![5, 10, 15, 20].includes(totalRounds)) && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 12, color: theme.textSoft, marginBottom: 6 }}>
+                    Nombre de manches personnalisé
+                  </div>
+                  <input type="number" min={1} max={99}
+                    value={totalRounds}
+                    onChange={(e) => {
+                      const v = parseInt(e.target.value) || 0;
+                      setTotalRounds(Math.max(1, Math.min(99, v)));
+                      setCustomRoundsInput(v);
+                    }}
+                    style={{
+                      width: '100%', padding: '12px 16px', fontSize: 18, fontWeight: 700,
+                      textAlign: 'center',
+                      border: `1.5px solid ${theme.border}`, borderRadius: 12,
+                      background: theme.card, color: theme.text
+                    }}/>
+                </div>
+              )}
+
+              {[5, 10, 15, 20].includes(totalRounds) || (totalRounds !== 0 && ![5, 10, 15, 20].includes(totalRounds)) ? null : (
+                <div style={{ marginBottom: 16 }} />
+              )}
+            </>
+          )}
 
           <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
             {questionMode === 'mostLikely' ? 'Pose ta question "Qui est le plus..."' : 'Pose ta question'}
@@ -2762,7 +2812,7 @@ export default function App() {
       code, hostId: playerId, phase: 'lobby',
       players: [{ id: playerId, name, emoji, color }],
       question: null, answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
-      settings: { totalScores: {}, currentRound: 0, totalRounds: 0, questionMode: gameMode, modeLocked: true },
+      settings: { totalScores: {}, currentRound: 0, totalRounds: 5, questionMode: gameMode, modeLocked: true },
       createdAt: Date.now()
     };
     await storage.setRoom(code, newRoom);
