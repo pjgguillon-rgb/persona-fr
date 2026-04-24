@@ -619,18 +619,19 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
         <Settings size={22} />
       </button>
 
-      <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 20, marginBottom: 36 }}>
+      <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 20, marginBottom: 32 }}>
         <div style={{
           display: 'inline-block',
-          background: theme.name === 'Persona' ? '#1a1630' : (theme.darkIsLight ? 'transparent' : 'white'),
-          borderRadius: 24,
-          padding: '22px 26px',
+          background: theme.name === 'Persona' ? '#2a2838' : (theme.darkIsLight ? '#2a2838' : 'white'),
+          borderRadius: 20,
+          padding: '8px 22px',
           boxShadow: theme.name === 'Persona'
-            ? '0 12px 40px rgba(184, 75, 222, 0.25), 0 4px 16px rgba(74, 98, 216, 0.15)'
-            : (theme.darkIsLight ? 'none' : '0 10px 40px rgba(155, 45, 198, 0.15), 0 2px 10px rgba(45, 58, 158, 0.08)'),
+            ? '0 10px 32px rgba(184, 75, 222, 0.2), 0 4px 12px rgba(74, 98, 216, 0.12)'
+            : '0 8px 28px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)',
           marginBottom: 4,
           maxWidth: '100%',
-          position: 'relative'
+          position: 'relative',
+          lineHeight: 0
         }}>
           <img src="/persona-logo.png" alt="PERSONA"
             onError={(e) => { e.target.style.display = 'none'; const fb = e.target.parentNode.parentNode.querySelector('.persona-fallback'); if (fb) fb.style.display = 'block'; e.target.parentNode.style.display = 'none'; }}
