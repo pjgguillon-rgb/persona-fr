@@ -88,7 +88,7 @@ const GAME_MODES = {
 const THEMES = {
   persona: {
     name: 'Persona', icon: '✨',
-    logoBg: '#ffd9c2',
+    logoBg: 'linear-gradient(135deg, #ffe8d6 0%, #ffd9c2 50%, #ffc5a8 100%)',
     bg: '#fbf9ff',
     text: '#1e1b3a', textSoft: '#5e5a7e', textMuted: '#9995b8',
     border: '#e6e0f5', borderDark: '#d6cef0',
@@ -104,7 +104,7 @@ const THEMES = {
   },
   classique: {
     name: 'Classique', icon: '☕',
-    logoBg: '#f5e6d3',
+    logoBg: 'linear-gradient(135deg, #fbf0e0 0%, #f5e6d3 50%, #eed7b8 100%)',
     bg: '#faf7f2', text: '#1a1a1a', textSoft: '#6b655c', textMuted: '#a8a299',
     border: '#e5e0d8', borderDark: '#d4cec3',
     card: '#faf7f2', dark: '#1a1a1a',
@@ -118,7 +118,7 @@ const THEMES = {
   },
   sombre: {
     name: 'Minuit', icon: '🌙',
-    logoBg: '#2a2540',
+    logoBg: 'linear-gradient(135deg, #352d4f 0%, #2a2540 50%, #1f1a35 100%)',
     bg: '#0f0f14', text: '#f0ebe0', textSoft: '#9a9590', textMuted: '#5a554f',
     border: '#2a2832', borderDark: '#3a3844',
     card: '#1a1822', dark: '#f0ebe0',
@@ -133,7 +133,7 @@ const THEMES = {
   },
   fete: {
     name: 'Fête', icon: '🎉',
-    logoBg: '#ffcce0',
+    logoBg: 'linear-gradient(135deg, #ffdde8 0%, #ffcce0 50%, #ffb5d2 100%)',
     bg: '#fff0f5', text: '#2d0a4e', textSoft: '#6b3e8f', textMuted: '#a988c7',
     border: '#f4c8e0', borderDark: '#e8a8d0',
     card: '#fff0f5', dark: '#2d0a4e',
@@ -148,7 +148,7 @@ const THEMES = {
   },
   retro: {
     name: 'Rétro', icon: '📺',
-    logoBg: '#e8d5a0',
+    logoBg: 'linear-gradient(135deg, #f0e0b0 0%, #e8d5a0 50%, #d8c085 100%)',
     bg: '#f4e8d0', text: '#3a2817', textSoft: '#7a5a3f', textMuted: '#b89868',
     border: '#d4b896', borderDark: '#c4a478',
     card: '#f4e8d0', dark: '#3a2817',
@@ -891,30 +891,209 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
   };
 
   const CLASSIC_SUGGESTIONS = [
+    // Hontes & embarras
     "Ta pire honte ?",
-    "Si tu étais invisible 1h, tu ferais quoi ?",
-    "Le pire cadeau que tu as reçu ?",
-    "Ton plus grand fantasme de vacances ?",
-    "Un talent caché que personne ne connaît ?",
-    "Ta plus grosse peur absurde ?",
+    "Le moment le plus gênant de ta vie ?",
+    "Un fou rire qui est très mal tombé ?",
+    "Un moment où tu as fait semblant de connaître quelqu'un ?",
+    "La dernière fois que tu as fait une grosse gaffe ?",
+    "Un moment où tu as eu envie de disparaître sous terre ?",
+    "Une fois où tu t'es trompé de prénom pour une personne ?",
+    // Secrets & aveux
+    "Ton plus gros mensonge d'enfance ?",
+    "Un secret que tu n'as jamais dit à personne ?",
+    "La chose la plus stupide que tu aies crue longtemps ?",
+    "Un truc que tu faisais en cachette quand tu étais petit ?",
+    "La dernière fois que tu as menti et pourquoi ?",
     "Un truc que tu regrettes d'avoir fait hier ?",
+    "Un truc que tu regrettes encore aujourd'hui ?",
+    "Un secret que tu gardes depuis plus de 10 ans ?",
+    // Peurs
+    "Ta plus grosse peur absurde ?",
+    "Une phobie dont tu as honte ?",
+    "Ta plus grande peur pour l'avenir ?",
+    "Un cauchemar récurrent que tu fais ?",
+    // Fantasmes & rêves
+    "Ton plus grand fantasme de vacances ?",
+    "Si tu gagnais 10 millions d'euros demain, la première chose que tu ferais ?",
+    "Quelle superpouvoir tu voudrais avoir ?",
+    "Si tu pouvais vivre dans un film, lequel ?",
+    "Ton job de rêve quand tu avais 10 ans ?",
+    "Si tu pouvais te téléporter n'importe où maintenant, où ?",
+    "Dans quelle époque aurais-tu aimé vivre ?",
+    // Qui suis-je
+    "Un talent caché que personne ne connaît ?",
+    "Un truc que tu fais super bien mais qui ne sert à rien ?",
+    "Ta plus grande fierté dans la vie ?",
+    "Le plus beau compliment que tu aies reçu ?",
+    "Un trait de caractère que tu détestes chez toi ?",
+    "Qu'est-ce qui te rend unique selon toi ?",
+    "Un truc que tu aimerais changer chez toi ?",
+    // Préférences
     "Ta chanson coupable préférée ?",
-    "Ton plus gros mensonge d'enfance ?"
+    "Le film que tu regardes à chaque fois qu'il passe ?",
+    "Une émission de télé trashy que tu adores ?",
+    "Ton plat préféré de cantine scolaire ?",
+    "La série que tu pourrais regarder en boucle ?",
+    "Ton pire goût musical assumé ?",
+    "Le livre qui t'a le plus marqué ?",
+    // Si tu pouvais
+    "Si tu étais invisible 1h, tu ferais quoi ?",
+    "Si tu pouvais dire un secret anonyme, ce serait quoi ?",
+    "Si tu devais changer de métier demain, quel serait-il ?",
+    "Si tu pouvais effacer un souvenir, lequel ?",
+    "Si tu pouvais revivre une journée, laquelle ?",
+    "Si tu pouvais échanger de vie avec quelqu'un pour 1 jour, qui ?",
+    "Si tu devais vivre sans internet pendant 1 an, comment tu ferais ?",
+    // Cadeaux & surprises
+    "Le pire cadeau que tu as reçu ?",
+    "Le plus beau cadeau que tu aies jamais reçu ?",
+    "Le cadeau que tu rêves de recevoir ?",
+    // Amour & relations
+    "Un coup de foudre dont tu te souviens encore ?",
+    "La pire idée de rendez-vous ?",
+    "Un crush d'enfance que tu avais ?",
+    "Ta plus grande qualité pour séduire ?",
+    // Quotidien
+    "Un truc bizarre que tu fais quand tu es seul ?",
+    "Une habitude dont tu n'arrives pas à te débarrasser ?",
+    "Ta routine parfaite pour un dimanche matin ?",
+    "Un guilty pleasure culinaire ?",
+    "Ce que tu mangerais si c'était ton dernier repas ?",
+    "Un truc idiot que tu fais tous les jours ?",
+    // Voyages & aventures
+    "Le voyage le plus marquant de ta vie ?",
+    "Un endroit où tu n'iras jamais ?",
+    "Le pays que tu rêves de visiter ?",
+    "La galère la plus épique de tes voyages ?",
+    // Enfance
+    "Ton meilleur souvenir d'enfance ?",
+    "Ton ami imaginaire quand tu étais petit ?",
+    "Ce que tu détestais le plus à l'école ?",
+    "Ton héros d'enfance ?",
+    "Un dessin animé que tu regardes encore aujourd'hui ?",
+    // Drôles / absurdes
+    "Quel animal tu serais et pourquoi ?",
+    "Si tu étais un aliment, lequel ?",
+    "Ta meilleure technique pour éviter quelqu'un ?",
+    "Un talent complètement inutile que tu as ?",
+    "La chose la plus chère que tu aies achetée sur un coup de tête ?",
+    "Ta stratégie pour gagner à Pierre-Feuille-Ciseaux ?",
+    // Projections
+    "Comment tu te vois dans 10 ans ?",
+    "Ce que tu dirais à toi-même à 15 ans ?",
+    "Ton bucket list numéro 1 ?",
+    "La dernière chose que tu veux faire avant de mourir ?",
+    "Le compliment que tu aimerais entendre plus souvent ?",
+    "Un changement que tu veux faire cette année ?"
   ];
 
   const MOST_LIKELY_SUGGESTIONS = [
+    // Carrière & réussite
     "Qui est le plus susceptible de finir milliardaire ?",
     "Qui est le plus susceptible de devenir célèbre ?",
-    "Qui oublierait son propre anniversaire ?",
+    "Qui est le plus susceptible de créer sa propre entreprise ?",
+    "Qui gagnerait \"Qui veut gagner des millions\" ?",
+    "Qui finirait prof dans un lycée ?",
+    "Qui est le plus susceptible de devenir président ?",
+    "Qui deviendrait un influenceur suivi par des millions ?",
+    "Qui écrirait un bestseller ?",
+    // Chaos & catastrophes
     "Qui finirait en prison pour une raison stupide ?",
     "Qui se ferait avoir par une arnaque évidente ?",
+    "Qui déclencherait la prochaine apocalypse par accident ?",
+    "Qui perdrait son téléphone au moins 3 fois par mois ?",
+    "Qui arriverait en retard à son propre mariage ?",
+    "Qui se ferait bannir d'un pays ?",
+    "Qui resterait coincé dans un ascenseur ?",
+    "Qui déclencherait une alarme incendie pour sécher les cours ?",
+    // Personnalité
+    "Qui oublierait son propre anniversaire ?",
     "Qui ferait le meilleur parent ?",
+    "Qui ferait le pire parent ?",
+    "Qui survivrait à l'apocalypse zombie ?",
+    "Qui mourrait en premier dans un film d'horreur ?",
+    "Qui adopterait 10 chats ?",
+    "Qui ne se marierait jamais ?",
+    "Qui élèverait 5 enfants sans broncher ?",
+    "Qui pleurerait devant une pub émouvante ?",
+    "Qui ferait une crise pour une place de parking ?",
+    // Lifestyle
     "Qui partirait vivre dans une cabane en forêt ?",
-    "Qui adopterait 10 chats ?"
+    "Qui deviendrait végan du jour au lendemain ?",
+    "Qui ferait le tour du monde en sac à dos ?",
+    "Qui rejoindrait une secte par curiosité ?",
+    "Qui abandonnerait tout pour vivre sur une île ?",
+    "Qui ferait une thalasso tous les week-ends si possible ?",
+    "Qui dormirait 16h par jour si on le laissait ?",
+    // Embarras
+    "Qui danserait sur une table en soirée ?",
+    "Qui embrasserait un(e) inconnu(e) sur un pari ?",
+    "Qui appellerait \"maman\" son prof par erreur ?",
+    "Qui tomberait dans les escaliers en public ?",
+    "Qui enverrait un texto à la mauvaise personne ?",
+    "Qui aurait un tatouage qu'il regrette ?",
+    // Superpouvoirs
+    "Qui utiliserait mal un superpouvoir ?",
+    "Qui deviendrait un super-vilain ?",
+    "Qui sauverait le monde ?",
+    "Qui serait le meilleur en téléportation ?",
+    // Sports & compétitions
+    "Qui gagnerait un concours de hot-dogs ?",
+    "Qui finirait premier à Koh-Lanta ?",
+    "Qui abandonnerait le premier dans une rando de 20 km ?",
+    "Qui ferait une compétition de karaoké ?",
+    // Cœur
+    "Qui tomberait amoureux en vacances ?",
+    "Qui enverrait le message de l'année à son crush ?",
+    "Qui se ferait plaquer par texto ?"
+  ];
+
+  const BLUFF_SUGGESTIONS = [
+    "Ta plus grosse bêtise d'enfance ?",
+    "Un truc que tu as volé (même petit) ?",
+    "Ton rêve le plus bizarre ?",
+    "Un truc que tu as caché à tes parents ?",
+    "La plus grosse dépense inutile de ta vie ?",
+    "Un talent secret ?",
+    "Un crush bizarre que tu as eu ?",
+    "Ta plus grande fierté ?",
+    "Un mensonge que tu répètes souvent ?",
+    "Ta pire excuse pour ne pas sortir ?",
+    "Une aventure dont tu rêves ?",
+    "Ton surnom le plus ridicule ?",
+    "Un truc que tu détestes mais que tout le monde adore ?",
+    "La dernière fois que tu as pleuré et pourquoi ?"
+  ];
+
+  const DUO_SUGGESTIONS = [
+    "Quel est notre souvenir commun préféré ?",
+    "Si on devait vivre ailleurs, où ?",
+    "Qu'est-ce qui t'énerve le plus chez moi ?",
+    "Ma plus grande qualité selon toi ?",
+    "Ton moment préféré de notre relation ?",
+    "Si on avait un animal ensemble, lequel ?",
+    "Le prochain voyage qu'on devrait faire ?",
+    "Un truc qu'on devrait changer dans notre quotidien ?",
+    "Une chose que tu aimerais qu'on fasse plus souvent ?",
+    "Ton film préféré qu'on a regardé ensemble ?",
+    "Un plat que tu me prépares les yeux fermés ?",
+    "Notre pire engueulade ?",
+    "Notre plus beau fou rire ?",
+    "Si tu devais me décrire en 3 mots ?",
+    "Une habitude que tu as copiée sur moi ?",
+    "Le jour où tu as su qu'on serait proches ?",
+    "Une chanson qui te fait penser à moi ?",
+    "Un secret que tu ne m'as jamais dit ?",
+    "Mon défaut que tu supportes le mieux ?",
+    "Qu'est-ce qui nous rend complémentaires ?"
   ];
 
   const pickRandom = () => {
-    const list = questionMode === 'mostLikely' ? MOST_LIKELY_SUGGESTIONS : CLASSIC_SUGGESTIONS;
+    let list = CLASSIC_SUGGESTIONS;
+    if (questionMode === 'mostLikely') list = MOST_LIKELY_SUGGESTIONS;
+    else if (questionMode === 'bluff') list = BLUFF_SUGGESTIONS;
+    else if (questionMode === 'duo') list = DUO_SUGGESTIONS;
     setQuestion(list[Math.floor(Math.random() * list.length)]);
   };
 
@@ -1099,7 +1278,7 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
           {!gameInProgress && (
             <>
               <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                Durée de la partie
+                Nombre de manches
               </div>
               <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
                 {[
@@ -1664,7 +1843,8 @@ const GuessScreenClassic = ({ room, playerId, onSubmit, onLeave, onOpenSettings,
         entries.push({ answerId: pid, authorId: pid, text: data.real });
       }
     });
-    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const currentRound = room.settings?.currentRound || 1;
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0) + currentRound * 7919;
     const arr = [...entries];
     let s = seed;
     for (let i = arr.length - 1; i > 0; i--) {
@@ -1673,7 +1853,7 @@ const GuessScreenClassic = ({ room, playerId, onSubmit, onLeave, onOpenSettings,
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [room.code, room.answers, playerId]);
+  }, [room.code, room.answers, playerId, room.settings?.currentRound]);
 
   // Les autres joueurs (sans moi)
   const otherPlayers = room.players.filter(p => p.id !== playerId);
@@ -1812,7 +1992,8 @@ const GuessScreenBluffPhase1 = ({ room, playerId, onSubmit, onLeave, onOpenSetti
       if (data?.real) entries.push({ answerId: `real_${pid}`, authorId: pid, text: data.real, isBluff: false });
       if (data?.bluff) entries.push({ answerId: `bluff_${pid}`, authorId: pid, text: data.bluff, isBluff: true });
     });
-    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const currentRound = room.settings?.currentRound || 1;
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0) + currentRound * 7919;
     const arr = [...entries];
     let s = seed;
     for (let i = arr.length - 1; i > 0; i--) {
@@ -1821,7 +2002,7 @@ const GuessScreenBluffPhase1 = ({ room, playerId, onSubmit, onLeave, onOpenSetti
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [room.code, room.answers, playerId]);
+  }, [room.code, room.answers, playerId, room.settings?.currentRound]);
 
   const toggleBluff = (answerId) => {
     playSound(440, 60, soundEnabled);
@@ -1910,7 +2091,8 @@ const GuessScreenBluffPhase2 = ({ room, playerId, onSubmit, onLeave, onOpenSetti
         entries.push({ answerId: pid, authorId: pid, text: data.real });
       }
     });
-    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const currentRound = room.settings?.currentRound || 1;
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0) + currentRound * 7919;
     const arr = [...entries];
     let s = seed;
     for (let i = arr.length - 1; i > 0; i--) {
@@ -1919,7 +2101,7 @@ const GuessScreenBluffPhase2 = ({ room, playerId, onSubmit, onLeave, onOpenSetti
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [room.code, room.answers, playerId]);
+  }, [room.code, room.answers, playerId, room.settings?.currentRound]);
 
   const otherPlayers = room.players.filter(p => p.id !== playerId);
   const usedIds = Object.values(guesses);
@@ -2080,7 +2262,8 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, onOpenSetti
       if (data?.real) entries.push({ answerId: `real_${pid}`, authorId: pid, text: data.real, isBluff: false });
       if (data?.bluff) entries.push({ answerId: `bluff_${pid}`, authorId: pid, text: data.bluff, isBluff: true });
     });
-    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const currentRound = room.settings?.currentRound || 1;
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0) + currentRound * 7919;
     const arr = [...entries];
     let s = seed;
     for (let i = arr.length - 1; i > 0; i--) {
@@ -2089,7 +2272,7 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, onOpenSetti
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [room.code, room.answers]);
+  }, [room.code, room.answers, room.settings?.currentRound]);
 
   const mostLikelyVotes = useMemo(() => {
     if (mode !== 'mostLikely') return null;
