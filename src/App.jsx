@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Users, Plus, Send, Eye, Trophy, ArrowRight, Copy, Check, Sparkles,
   RotateCcw, Crown, Volume2, VolumeX, Settings, X, UserX, Palette,
-  Star, Heart, Award, Zap
+  Info, ChevronLeft
 } from 'lucide-react';
 import { storage } from './firebase.js';
 
@@ -23,11 +23,9 @@ const generatePlayerId = () => {
 const saveLocalSession = (data) => {
   try { localStorage.setItem('qdq_session', JSON.stringify(data)); } catch {}
 };
-
 const loadLocalSession = () => {
   try { return JSON.parse(localStorage.getItem('qdq_session') || 'null'); } catch { return null; }
 };
-
 const clearLocalSession = () => {
   try { localStorage.removeItem('qdq_session'); } catch {}
 };
@@ -45,24 +43,43 @@ const EMOJI_AVATARS = [
   '🐨', '🦁', '🐸', '🍀', '💎', '🎪', '🌻', '🐝'
 ];
 
+// ============ MODES DE JEU ============
+const GAME_MODES = {
+  classic: {
+    key: 'classic',
+    label: 'Classique',
+    icon: '💬',
+    shortDesc: 'Le mode original',
+    description: 'Chacun répond à la question. Les réponses sont mélangées et tout le monde doit deviner qui a dit quoi.',
+    scoring: '1 point par bonne devinette'
+  },
+  bluff: {
+    key: 'bluff',
+    label: 'Bluff',
+    icon: '🎭',
+    shortDesc: 'Avec fausses réponses',
+    description: 'Chacun écrit 1 vraie réponse + 1 fausse (bluff). Phase 1 : devinez quelles réponses sont des bluffs. Phase 2 : associez les vraies réponses à leur auteur.',
+    scoring: '+2 par bluff démasqué · +1 par vraie réponse trouvée · +1 si votre bluff trompe quelqu\'un'
+  },
+  mostLikely: {
+    key: 'mostLikely',
+    label: 'Qui est le plus...',
+    icon: '👉',
+    shortDesc: 'Vote pour un joueur',
+    description: 'Au lieu d\'écrire une réponse, chacun vote secrètement pour un joueur du groupe. Révélation du verdict à la fin.',
+    scoring: 'Pas de score — juste pour le fun et la discussion 😄'
+  }
+};
+
 // ============ THÈMES ============
 const THEMES = {
   classique: {
-    name: 'Classique',
-    icon: '☕',
-    bg: '#faf7f2',
-    text: '#1a1a1a',
-    textSoft: '#6b655c',
-    textMuted: '#a8a299',
-    border: '#e5e0d8',
-    borderDark: '#d4cec3',
-    card: '#faf7f2',
-    dark: '#1a1a1a',
-    accent: '#E94F37',
-    accentBg: '#F5B841',
-    accentText: '#F5B841',
-    success: '#4CB944',
-    purple: '#9B5DE5',
+    name: 'Classique', icon: '☕',
+    bg: '#faf7f2', text: '#1a1a1a', textSoft: '#6b655c', textMuted: '#a8a299',
+    border: '#e5e0d8', borderDark: '#d4cec3',
+    card: '#faf7f2', dark: '#1a1a1a',
+    accent: '#E94F37', accentBg: '#F5B841', accentText: '#F5B841',
+    success: '#4CB944', purple: '#9B5DE5',
     displayFont: "'Fraunces', Georgia, serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 20% 30%, rgba(233, 79, 55, 0.08), transparent 50%),
@@ -70,21 +87,12 @@ const THEMES = {
             radial-gradient(circle at 50% 50%, rgba(245, 184, 65, 0.05), transparent 60%)`
   },
   sombre: {
-    name: 'Minuit',
-    icon: '🌙',
-    bg: '#0f0f14',
-    text: '#f0ebe0',
-    textSoft: '#9a9590',
-    textMuted: '#5a554f',
-    border: '#2a2832',
-    borderDark: '#3a3844',
-    card: '#1a1822',
-    dark: '#f0ebe0',
-    accent: '#ff6b47',
-    accentBg: '#ffa726',
-    accentText: '#ffa726',
-    success: '#5FD068',
-    purple: '#b57dff',
+    name: 'Minuit', icon: '🌙',
+    bg: '#0f0f14', text: '#f0ebe0', textSoft: '#9a9590', textMuted: '#5a554f',
+    border: '#2a2832', borderDark: '#3a3844',
+    card: '#1a1822', dark: '#f0ebe0',
+    accent: '#ff6b47', accentBg: '#ffa726', accentText: '#ffa726',
+    success: '#5FD068', purple: '#b57dff',
     displayFont: "'Fraunces', Georgia, serif",
     bodyFont: "'DM Sans', sans-serif",
     darkIsLight: true,
@@ -93,21 +101,12 @@ const THEMES = {
             radial-gradient(circle at 50% 50%, rgba(255, 167, 38, 0.08), transparent 60%)`
   },
   fete: {
-    name: 'Fête',
-    icon: '🎉',
-    bg: '#fff0f5',
-    text: '#2d0a4e',
-    textSoft: '#6b3e8f',
-    textMuted: '#a988c7',
-    border: '#f4c8e0',
-    borderDark: '#e8a8d0',
-    card: '#fff0f5',
-    dark: '#2d0a4e',
-    accent: '#ff006e',
-    accentBg: '#ffbe0b',
-    accentText: '#ffbe0b',
-    success: '#06d6a0',
-    purple: '#8338ec',
+    name: 'Fête', icon: '🎉',
+    bg: '#fff0f5', text: '#2d0a4e', textSoft: '#6b3e8f', textMuted: '#a988c7',
+    border: '#f4c8e0', borderDark: '#e8a8d0',
+    card: '#fff0f5', dark: '#2d0a4e',
+    accent: '#ff006e', accentBg: '#ffbe0b', accentText: '#ffbe0b',
+    success: '#06d6a0', purple: '#8338ec',
     displayFont: "'Fraunces', Georgia, serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 15% 25%, rgba(255, 0, 110, 0.15), transparent 45%),
@@ -116,21 +115,12 @@ const THEMES = {
             radial-gradient(circle at 70% 20%, rgba(6, 214, 160, 0.1), transparent 45%)`
   },
   retro: {
-    name: 'Rétro',
-    icon: '📺',
-    bg: '#f4e8d0',
-    text: '#3a2817',
-    textSoft: '#7a5a3f',
-    textMuted: '#b89868',
-    border: '#d4b896',
-    borderDark: '#c4a478',
-    card: '#f4e8d0',
-    dark: '#3a2817',
-    accent: '#d2691e',
-    accentBg: '#e8b04e',
-    accentText: '#e8b04e',
-    success: '#739e82',
-    purple: '#a56cc1',
+    name: 'Rétro', icon: '📺',
+    bg: '#f4e8d0', text: '#3a2817', textSoft: '#7a5a3f', textMuted: '#b89868',
+    border: '#d4b896', borderDark: '#c4a478',
+    card: '#f4e8d0', dark: '#3a2817',
+    accent: '#d2691e', accentBg: '#e8b04e', accentText: '#e8b04e',
+    success: '#739e82', purple: '#a56cc1',
     displayFont: "'Fraunces', Georgia, serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 20% 30%, rgba(210, 105, 30, 0.1), transparent 50%),
@@ -145,14 +135,11 @@ const playSound = (freq, duration = 120, enabled = true) => {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = freq;
-    osc.type = 'sine';
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq; osc.type = 'sine';
     gain.gain.setValueAtTime(0.1, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
-    osc.start();
-    osc.stop(ctx.currentTime + duration / 1000);
+    osc.start(); osc.stop(ctx.currentTime + duration / 1000);
   } catch {}
 };
 
@@ -163,10 +150,8 @@ const playChord = (freqs, duration = 300, enabled = true) => {
     freqs.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
       gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.05);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
       osc.start(ctx.currentTime + i * 0.05);
@@ -216,7 +201,6 @@ const requestNotifPermission = async () => {
   } catch {}
 };
 
-
 // ============ STYLES ============
 const GlobalStyles = ({ theme }) => (
   <style>{`
@@ -229,8 +213,6 @@ const GlobalStyles = ({ theme }) => (
     @keyframes qdq-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     @keyframes qdq-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
     @keyframes qdq-float { 0% { transform: translateY(100vh) rotate(0deg); opacity: 1; } 100% { transform: translateY(-100px) rotate(720deg); opacity: 0; } }
-    @keyframes qdq-typing { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
-    @keyframes qdq-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 185, 68, 0); } 50% { box-shadow: 0 0 20px 4px rgba(76, 185, 68, 0.4); } }
     @keyframes qdq-slide-in { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .qdq-fadeup { animation: qdq-fadeup 0.4s ease-out both; }
     .qdq-pop { animation: qdq-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
@@ -246,9 +228,6 @@ const GlobalStyles = ({ theme }) => (
     .qdq-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .qdq-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
     .qdq-confetti { position: fixed; top: 0; width: 10px; height: 14px; pointer-events: none; z-index: 9999; animation: qdq-float linear forwards; }
-    .qdq-typing-dot { display: inline-block; animation: qdq-typing 1.4s infinite; }
-    .qdq-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .qdq-typing-dot:nth-child(3) { animation-delay: 0.4s; }
   `}</style>
 );
 
@@ -272,7 +251,7 @@ const launchConfetti = (theme) => {
 };
 
 // ============ COMPOSANTS UI ============
-const Avatar = ({ emoji, name, color, size = 40, theme }) => {
+const Avatar = ({ emoji, name, color, size = 40 }) => {
   if (emoji) {
     return (
       <div style={{
@@ -292,7 +271,7 @@ const Avatar = ({ emoji, name, color, size = 40, theme }) => {
       fontWeight: 700, fontSize: size * 0.4, flexShrink: 0,
       boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
     }}>
-      {name.slice(0, 1).toUpperCase()}
+      {name?.slice(0, 1).toUpperCase() || '?'}
     </div>
   );
 };
@@ -418,17 +397,67 @@ const SettingsModal = ({ onClose, theme, themeName, setThemeName, soundEnabled, 
   </div>
 );
 
+// ============ MODAL INFO MODE ============
+const ModeInfoModal = ({ mode, onClose, theme }) => (
+  <div style={{
+    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+  }} onClick={onClose}>
+    <div onClick={(e) => e.stopPropagation()} style={{
+      background: theme.bg, borderRadius: 24, padding: 28,
+      width: '100%', maxWidth: 420, position: 'relative'
+    }}>
+      <button onClick={onClose} style={{
+        position: 'absolute', top: 16, right: 16,
+        background: 'transparent', border: 'none', cursor: 'pointer',
+        padding: 4, color: theme.textSoft
+      }}>
+        <X size={20} />
+      </button>
+      <div style={{ fontSize: 48, textAlign: 'center', marginBottom: 12 }}>{mode.icon}</div>
+      <h3 className="qdq-display" style={{
+        fontSize: 26, fontWeight: 700, color: theme.text,
+        textAlign: 'center', margin: '0 0 16px 0'
+      }}>
+        {mode.label}
+      </h3>
+      <p style={{
+        color: theme.textSoft, fontSize: 15, lineHeight: 1.6,
+        margin: '0 0 20px 0'
+      }}>
+        {mode.description}
+      </p>
+      <div style={{
+        padding: 16, background: theme.card,
+        borderRadius: 14, border: `1.5px solid ${theme.border}`
+      }}>
+        <div style={{
+          fontSize: 11, fontWeight: 700, color: theme.accent,
+          textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8
+        }}>
+          ⭐ Points
+        </div>
+        <div style={{ fontSize: 14, color: theme.text, lineHeight: 1.5 }}>
+          {mode.scoring}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // ============ ÉCRAN ACCUEIL ============
 const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
   const [mode, setMode] = useState('home');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() => localStorage.getItem('qdq_lastName') || '');
   const [code, setCode] = useState('');
-  const [emoji, setEmoji] = useState(EMOJI_AVATARS[0]);
+  const [emoji, setEmoji] = useState(() => localStorage.getItem('qdq_lastEmoji') || EMOJI_AVATARS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleCreate = async () => {
     if (!name.trim()) return setError('Entre ton prénom');
+    localStorage.setItem('qdq_lastName', name.trim());
+    localStorage.setItem('qdq_lastEmoji', emoji);
     setLoading(true); setError('');
     await onCreate(name.trim(), emoji);
     setLoading(false);
@@ -437,6 +466,8 @@ const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
   const handleJoin = async () => {
     if (!name.trim()) return setError('Entre ton prénom');
     if (code.length !== 5) return setError('Le code fait 5 caractères');
+    localStorage.setItem('qdq_lastName', name.trim());
+    localStorage.setItem('qdq_lastEmoji', emoji);
     setLoading(true); setError('');
     const ok = await onJoin(name.trim(), code.toUpperCase(), emoji);
     if (!ok) setError('Salon introuvable ou partie déjà commencée');
@@ -444,7 +475,7 @@ const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
   };
 
   return (
-    <div style={{ padding: '40px 24px', maxWidth: 480, margin: '0 auto' }}>
+    <div style={{ padding: '40px 24px', maxWidth: 480, margin: '0 auto', position: 'relative' }}>
       <button onClick={onOpenSettings} className="qdq-btn" style={{
         position: 'absolute', top: 16, right: 16, background: 'transparent',
         border: 'none', cursor: 'pointer', padding: 8, color: theme.textSoft
@@ -554,12 +585,23 @@ const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
 };
 
 // ============ ÉCRAN LOBBY ============
-const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSettings, soundEnabled }) => {
+const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRounds, theme, onOpenSettings, soundEnabled }) => {
   const [copied, setCopied] = useState(false);
   const isHost = room.hostId === playerId;
   const [question, setQuestion] = useState('');
-  const [questionMode, setQuestionMode] = useState(room.settings?.questionMode || 'classic'); // classic | bluff | mostLikely
-  const [totalRounds, setTotalRounds] = useState(room.settings?.totalRounds || 0); // 0 = illimité
+
+  // Si la partie a déjà commencé, on utilise le mode et le nombre de manches du salon
+  const gameInProgress = (room.settings?.currentRound || 0) > 0;
+  const [questionMode, setQuestionMode] = useState(gameInProgress ? room.settings.questionMode : 'classic');
+  const [totalRounds, setTotalRounds] = useState(room.settings?.totalRounds || 0);
+  const [showModeInfo, setShowModeInfo] = useState(null);
+
+  // Si la partie est en cours, forcer le mode utilisé
+  useEffect(() => {
+    if (gameInProgress && room.settings?.questionMode) {
+      setQuestionMode(room.settings.questionMode);
+    }
+  }, [gameInProgress, room.settings?.questionMode]);
 
   const copyCode = () => {
     navigator.clipboard?.writeText(room.code);
@@ -596,8 +638,12 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
     setQuestion(list[Math.floor(Math.random() * list.length)]);
   };
 
+  const currentModeData = GAME_MODES[questionMode];
+
   return (
     <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto' }}>
+      {showModeInfo && <ModeInfoModal mode={showModeInfo} onClose={() => setShowModeInfo(null)} theme={theme} />}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
         <button onClick={onLeave} style={{
           background: 'transparent', border: 'none', color: theme.textSoft,
@@ -634,9 +680,10 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
           }}>
             {copied ? <><Check size={14}/> Copié !</> : <><Copy size={14}/> Copier le code</>}
           </button>
-          {room.settings?.currentRound > 0 && (
-            <div style={{ marginTop: 14, fontSize: 12, color: theme.textMuted }}>
-              Manche {room.settings.currentRound}{room.settings.totalRounds > 0 ? `/${room.settings.totalRounds}` : ''}
+          {gameInProgress && (
+            <div style={{ marginTop: 14, fontSize: 12, color: theme.textMuted, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>{GAME_MODES[room.settings.questionMode]?.icon}</span>
+              Mode {GAME_MODES[room.settings.questionMode]?.label} · Manche {room.settings.currentRound}{room.settings.totalRounds > 0 ? `/${room.settings.totalRounds}` : ''}
             </div>
           )}
         </div>
@@ -657,7 +704,7 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
               background: theme.card, borderRadius: 14, border: `1.5px solid ${theme.border}`,
               animationDelay: `${i * 0.05}s`
             }}>
-              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={36} theme={theme} />
+              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={36} />
               <div style={{ flex: 1, fontSize: 15, fontWeight: 500, color: theme.text }}>
                 {p.name}
                 {p.id === playerId && <span style={{ color: theme.textSoft, fontWeight: 400 }}> (toi)</span>}
@@ -683,60 +730,96 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
 
       {isHost ? (
         <div className="qdq-fadeup">
-          {/* Mode de question */}
-          <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+          {/* Mode de question - verrouillé si partie en cours */}
+          <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
             Mode de jeu
+            {gameInProgress && <span style={{ color: theme.textMuted, fontSize: 10 }}>🔒 verrouillé</span>}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 16 }}>
-            {[
-              { key: 'classic', label: 'Classique', icon: '💬' },
-              { key: 'bluff', label: 'Bluff', icon: '🎭' },
-              { key: 'mostLikely', label: 'Le plus sus.', icon: '👉' }
-            ].map(opt => (
-              <button key={opt.key} onClick={() => setQuestionMode(opt.key)} className="qdq-btn" style={{
-                padding: '10px 6px', borderRadius: 12,
-                background: questionMode === opt.key ? theme.dark : theme.card,
-                color: questionMode === opt.key ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
-                border: `1.5px solid ${questionMode === opt.key ? theme.dark : theme.border}`,
-                cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
-              }}>
-                <span style={{ fontSize: 18 }}>{opt.icon}</span>
-                {opt.label}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 }}>
+            {Object.values(GAME_MODES).map(m => (
+              <button key={m.key}
+                onClick={() => !gameInProgress && setQuestionMode(m.key)}
+                disabled={gameInProgress && questionMode !== m.key}
+                className="qdq-btn"
+                style={{
+                  padding: '10px 6px', borderRadius: 12,
+                  background: questionMode === m.key ? theme.dark : theme.card,
+                  color: questionMode === m.key ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
+                  border: `1.5px solid ${questionMode === m.key ? theme.dark : theme.border}`,
+                  cursor: gameInProgress && questionMode !== m.key ? 'not-allowed' : 'pointer',
+                  opacity: gameInProgress && questionMode !== m.key ? 0.3 : 1,
+                  fontSize: 12, fontWeight: 600,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{m.icon}</span>
+                {m.label}
               </button>
             ))}
           </div>
 
-          {/* Nombre de manches */}
-          {!room.settings?.currentRound && (
-            <>
-              <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                Durée de la partie
+          {/* Description du mode sélectionné */}
+          <div style={{
+            padding: 12, background: theme.card, borderRadius: 12,
+            border: `1px solid ${theme.border}`, marginBottom: 16,
+            display: 'flex', alignItems: 'flex-start', gap: 10
+          }}>
+            <div style={{ fontSize: 20, flexShrink: 0 }}>{currentModeData.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, color: theme.textSoft, lineHeight: 1.4 }}>
+                {currentModeData.shortDesc}. {currentModeData.description}
               </div>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-                {[
-                  { value: 0, label: 'Libre' },
-                  { value: 5, label: '5' },
-                  { value: 10, label: '10' },
-                  { value: 15, label: '15' },
-                  { value: 20, label: '20' }
-                ].map(opt => (
-                  <button key={opt.value} onClick={() => setTotalRounds(opt.value)} className="qdq-btn" style={{
+              <button onClick={() => setShowModeInfo(currentModeData)} style={{
+                background: 'transparent', border: 'none',
+                color: theme.accent, fontSize: 12, fontWeight: 600,
+                cursor: 'pointer', padding: '4px 0', marginTop: 4,
+                display: 'inline-flex', alignItems: 'center', gap: 4
+              }}>
+                <Info size={12} /> Détails & points
+              </button>
+            </div>
+          </div>
+
+          {/* Nombre de manches */}
+          <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+            {gameInProgress ? 'Nombre de manches (modifiable)' : 'Durée de la partie'}
+          </div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+            {[
+              { value: 0, label: 'Libre' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 15, label: '15' },
+              { value: 20, label: '20' }
+            ].map(opt => {
+              const disabled = gameInProgress && opt.value > 0 && opt.value < (room.settings?.currentRound || 0);
+              return (
+                <button key={opt.value}
+                  onClick={() => {
+                    if (disabled) return;
+                    setTotalRounds(opt.value);
+                    if (gameInProgress) onUpdateTotalRounds(opt.value);
+                  }}
+                  disabled={disabled}
+                  className="qdq-btn"
+                  style={{
                     flex: 1, minWidth: 50, padding: '10px 8px', borderRadius: 12,
                     background: totalRounds === opt.value ? theme.dark : theme.card,
                     color: totalRounds === opt.value ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
                     border: `1.5px solid ${totalRounds === opt.value ? theme.dark : theme.border}`,
-                    cursor: 'pointer', fontSize: 13, fontWeight: 700
-                  }}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                    opacity: disabled ? 0.3 : 1,
+                    fontSize: 13, fontWeight: 700
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-            {questionMode === 'mostLikely' ? 'Pose ta question "Qui est le plus susceptible..."' : 'Pose ta question'}
+            {questionMode === 'mostLikely' ? 'Pose ta question "Qui est le plus..."' : 'Pose ta question'}
           </div>
           <textarea value={question} onChange={(e) => setQuestion(e.target.value)}
             placeholder={questionMode === 'mostLikely' ? 'Ex: Qui est le plus susceptible de...' : 'Ex: Si tu pouvais dire un secret...'}
@@ -751,9 +834,10 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
           }}>
             <Sparkles size={14}/> Suggérer une question
           </button>
-          <Button variant="accent" theme={theme} onClick={() => onStart(question.trim(), questionMode, totalRounds)}
+          <Button variant="accent" theme={theme}
+            onClick={() => onStart(question.trim(), questionMode, totalRounds)}
             disabled={room.players.length < 2 || !question.trim()}>
-            {room.settings?.currentRound > 0 ? 'Manche suivante' : 'Lancer la partie'} <ArrowRight size={18} />
+            {gameInProgress ? 'Manche suivante' : 'Lancer la partie'} <ArrowRight size={18} />
           </Button>
           {room.players.length < 2 && (
             <p style={{ textAlign: 'center', color: theme.textSoft, fontSize: 13, marginTop: 12 }}>
@@ -762,12 +846,31 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, theme, onOpenSe
           )}
         </div>
       ) : (
-        <div className="qdq-fadeup" style={{
-          padding: 20, background: theme.card, borderRadius: 14,
-          textAlign: 'center', border: `1.5px dashed ${theme.borderDark}`
-        }}>
-          <div className="qdq-pulse" style={{ fontSize: 15, color: theme.textSoft }}>
-            En attente de <strong style={{ color: theme.text }}>{room.players.find(p => p.id === room.hostId)?.name}</strong> pour lancer...
+        <div className="qdq-fadeup">
+          {gameInProgress && (
+            <div style={{
+              padding: 12, background: theme.card, borderRadius: 12,
+              border: `1px solid ${theme.border}`, marginBottom: 16,
+              display: 'flex', alignItems: 'flex-start', gap: 10
+            }}>
+              <div style={{ fontSize: 20, flexShrink: 0 }}>{GAME_MODES[room.settings.questionMode]?.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 2 }}>
+                  Mode {GAME_MODES[room.settings.questionMode]?.label}
+                </div>
+                <div style={{ fontSize: 12, color: theme.textSoft, lineHeight: 1.4 }}>
+                  {GAME_MODES[room.settings.questionMode]?.shortDesc}
+                </div>
+              </div>
+            </div>
+          )}
+          <div style={{
+            padding: 20, background: theme.card, borderRadius: 14,
+            textAlign: 'center', border: `1.5px dashed ${theme.borderDark}`
+          }}>
+            <div className="qdq-pulse" style={{ fontSize: 15, color: theme.textSoft }}>
+              En attente de <strong style={{ color: theme.text }}>{room.players.find(p => p.id === room.hostId)?.name}</strong> pour lancer...
+            </div>
           </div>
         </div>
       )}
@@ -786,7 +889,17 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, theme, soundEnabled 
   const mode = room.settings?.questionMode || 'classic';
   const needsBluff = mode === 'bluff';
 
-  // Détection frappe
+  // Mode "Qui est le plus..." : composant dédié
+  if (mode === 'mostLikely') {
+    return <MostLikelyScreen room={room} playerId={playerId}
+      onSubmit={(targetId) => {
+        playSound(880, 100, soundEnabled);
+        vibrate(50, soundEnabled);
+        onSubmit(targetId, null);
+      }}
+      theme={theme} />;
+  }
+
   useEffect(() => {
     if (myAnswer) return;
     if (answer.length > 0 || bluff.length > 0) {
@@ -805,16 +918,6 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, theme, soundEnabled 
     vibrate(50, soundEnabled);
     onSubmit(answer.trim(), needsBluff ? bluff.trim() : null);
   };
-
-  if (mode === 'mostLikely') {
-    // Mode "Le plus susceptible de..." : on vote pour un joueur
-    return (
-      <MostLikelyScreen room={room} playerId={playerId} onSubmit={(targetId) => {
-        playSound(880, 100, soundEnabled);
-        onSubmit(targetId, null);
-      }} theme={theme} onTyping={onTyping} />
-    );
-  }
 
   if (myAnswer) {
     return (
@@ -843,7 +946,7 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, theme, soundEnabled 
                 const isTyping = room.typing?.[p.id] && !answeredIds.includes(p.id);
                 return (
                   <div key={p.id} style={{ opacity: answeredIds.includes(p.id) ? 1 : 0.4, position: 'relative' }}>
-                    <Avatar emoji={p.emoji} name={p.name} color={p.color} size={32} theme={theme} />
+                    <Avatar emoji={p.emoji} name={p.name} color={p.color} size={32} />
                     {isTyping && (
                       <div style={{
                         position: 'absolute', bottom: -4, right: -4,
@@ -866,7 +969,7 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, theme, soundEnabled 
     <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar emoji={me.emoji} name={me.name} color={me.color} size={32} theme={theme} />
+          <Avatar emoji={me.emoji} name={me.name} color={me.color} size={32} />
           <span style={{ fontSize: 14, fontWeight: 600, color: theme.text }}>{me.name}</span>
         </div>
         <div style={{ fontSize: 13, color: theme.textSoft, fontWeight: 600 }}>
@@ -928,7 +1031,7 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, theme, soundEnabled 
   );
 };
 
-// ============ ÉCRAN "LE PLUS SUSCEPTIBLE DE..." ============
+// ============ ÉCRAN "QUI EST LE PLUS..." ============
 const MostLikelyScreen = ({ room, playerId, onSubmit, theme }) => {
   const [selected, setSelected] = useState(null);
   const me = room.players.find(p => p.id === playerId);
@@ -948,8 +1051,16 @@ const MostLikelyScreen = ({ room, playerId, onSubmit, theme }) => {
             Vote envoyé
           </h2>
           <p style={{ color: theme.textSoft, marginTop: 12, fontSize: 15 }}>
-            En attente des autres joueurs... ({answeredIds.length}/{room.players.length})
+            En attente des autres joueurs...
           </p>
+          <div style={{ marginTop: 32, padding: 20, background: theme.dark, borderRadius: 16 }}>
+            <div className="qdq-display" style={{ fontSize: 48, fontWeight: 800, color: theme.darkIsLight ? theme.bg : theme.bg, lineHeight: 1 }}>
+              {answeredIds.length}<span style={{ color: theme.textMuted }}>/{room.players.length}</span>
+            </div>
+            <div style={{ fontSize: 12, color: theme.textMuted, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 8 }}>
+              ont voté
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -959,8 +1070,11 @@ const MostLikelyScreen = ({ room, playerId, onSubmit, theme }) => {
     <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar emoji={me.emoji} name={me.name} color={me.color} size={32} theme={theme} />
+          <Avatar emoji={me.emoji} name={me.name} color={me.color} size={32} />
           <span style={{ fontSize: 14, fontWeight: 600, color: theme.text }}>{me.name}</span>
+        </div>
+        <div style={{ fontSize: 13, color: theme.textSoft, fontWeight: 600 }}>
+          {answeredIds.length}/{room.players.length} votes
         </div>
       </div>
 
@@ -997,7 +1111,7 @@ const MostLikelyScreen = ({ room, playerId, onSubmit, theme }) => {
             borderRadius: 14, cursor: 'pointer',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6
           }}>
-            <Avatar emoji={p.emoji} name={p.name} color={p.color} size={36} theme={theme} />
+            <Avatar emoji={p.emoji} name={p.name} color={p.color} size={36} />
             <div style={{
               fontSize: 12, fontWeight: 600,
               color: selected === p.id ? 'white' : theme.text,
@@ -1020,23 +1134,19 @@ const MostLikelyScreen = ({ room, playerId, onSubmit, theme }) => {
   );
 };
 
-// ============ ÉCRAN DEVINER ============
-const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) => {
+// ============ ÉCRAN DEVINER (CLASSIQUE) ============
+const GuessScreenClassic = ({ room, playerId, onSubmit, theme, soundEnabled }) => {
   const [guesses, setGuesses] = useState({});
   const [currentAnswerIdx, setCurrentAnswerIdx] = useState(0);
   const myGuesses = room.guesses?.[playerId];
   const hasGuessed = !!myGuesses;
-  const mode = room.settings?.questionMode || 'classic';
 
-  // Construction des entries à deviner
+  // Entries : uniquement les vraies réponses, sauf la mienne
   const shuffledAnswers = useMemo(() => {
     const entries = [];
     Object.entries(room.answers || {}).forEach(([pid, data]) => {
-      if (data?.real) {
-        entries.push({ answerId: `real_${pid}`, authorId: pid, text: data.real, isBluff: false });
-      }
-      if (data?.bluff) {
-        entries.push({ answerId: `bluff_${pid}`, authorId: pid, text: data.bluff, isBluff: true });
+      if (data?.real && pid !== playerId) {
+        entries.push({ answerId: pid, authorId: pid, text: data.real });
       }
     });
     const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -1048,7 +1158,10 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-  }, [room.code, room.answers]);
+  }, [room.code, room.answers, playerId]);
+
+  // Les autres joueurs (sans moi)
+  const otherPlayers = room.players.filter(p => p.id !== playerId);
 
   const usedPlayerIds = Object.values(guesses);
   const currentAnswer = shuffledAnswers[currentAnswerIdx];
@@ -1057,13 +1170,10 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
   const handleAssign = (targetPlayerId) => {
     playSound(440, 60, soundEnabled);
     const newGuesses = { ...guesses };
-    // En mode bluff, un même joueur peut apparaître plusieurs fois (plusieurs réponses)
-    // Donc on ne retire pas comme en mode classique
-    if (mode !== 'bluff') {
-      Object.keys(newGuesses).forEach(aid => {
-        if (newGuesses[aid] === targetPlayerId) delete newGuesses[aid];
-      });
-    }
+    // En classique : chaque joueur ne peut être attribué qu'à une seule réponse
+    Object.keys(newGuesses).forEach(aid => {
+      if (newGuesses[aid] === targetPlayerId) delete newGuesses[aid];
+    });
     newGuesses[currentAnswer.answerId] = targetPlayerId;
     setGuesses(newGuesses);
 
@@ -1076,27 +1186,13 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
   };
 
   if (hasGuessed) {
-    const guessedCount = Object.keys(room.guesses || {}).length;
-    const totalPlayers = room.players.length;
+    return <WaitingScreen room={room} theme={theme} message="Devinettes envoyées" subtitle="En attente des autres..." icon="🔮" />;
+  }
+
+  if (shuffledAnswers.length === 0) {
     return (
-      <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
-        <div className="qdq-pop" style={{
-          width: 80, height: 80, borderRadius: '50%', background: theme.purple, color: 'white',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '60px auto 24px', fontSize: 36
-        }}>🔮</div>
-        <h2 className="qdq-display" style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: 0 }}>
-          Devinettes envoyées
-        </h2>
-        <p style={{ color: theme.textSoft, marginTop: 12, fontSize: 15 }}>En attente des autres...</p>
-        <div style={{ marginTop: 32, padding: 20, background: theme.dark, borderRadius: 16 }}>
-          <div className="qdq-display" style={{ fontSize: 48, fontWeight: 800, color: theme.darkIsLight ? theme.bg : theme.bg, lineHeight: 1 }}>
-            {guessedCount}<span style={{ color: theme.textMuted }}>/{totalPlayers}</span>
-          </div>
-          <div style={{ fontSize: 12, color: theme.textMuted, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 8 }}>
-            joueurs ont deviné
-          </div>
-        </div>
+      <div style={{ padding: '40px 24px', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
+        <p style={{ color: theme.textSoft }}>Aucune réponse à deviner. Passons à la suite...</p>
       </div>
     );
   }
@@ -1108,10 +1204,10 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
           ✦ À toi de deviner
         </div>
         <h2 className="qdq-display" style={{ fontSize: 26, fontWeight: 700, color: theme.text, margin: 0, lineHeight: 1.15 }}>
-          {mode === 'bluff' ? 'Qui a vraiment dit quoi ?' : 'Qui a dit quoi ?'}
+          Qui a dit quoi ?
         </h2>
         <p style={{ color: theme.textSoft, fontSize: 13, marginTop: 6 }}>
-          {mode === 'bluff' ? 'Attention aux bluffs ! Chaque joueur a écrit 1 vraie + 1 fausse réponse.' : 'Associe chaque réponse à un joueur'}
+          Ta propre réponse est automatiquement masquée
         </p>
       </div>
 
@@ -1153,9 +1249,9 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
         gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
         gap: 8, marginBottom: 24
       }}>
-        {room.players.map(p => {
+        {otherPlayers.map(p => {
           const isAssignedHere = guesses[currentAnswer.answerId] === p.id;
-          const isAssignedElsewhere = mode !== 'bluff' && usedPlayerIds.includes(p.id) && !isAssignedHere;
+          const isAssignedElsewhere = usedPlayerIds.includes(p.id) && !isAssignedHere;
           return (
             <button key={p.id} onClick={() => handleAssign(p.id)} className="qdq-btn" style={{
               padding: '12px 6px',
@@ -1165,7 +1261,7 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
               opacity: isAssignedElsewhere ? 0.4 : 1
             }}>
-              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={32} theme={theme} />
+              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={32} />
               <div style={{
                 fontSize: 12, fontWeight: 600,
                 color: isAssignedHere ? 'white' : theme.text,
@@ -1179,9 +1275,274 @@ const GuessScreen = ({ room, playerId, onSubmitGuesses, theme, soundEnabled }) =
         })}
       </div>
 
-      <Button variant="accent" theme={theme} onClick={() => onSubmitGuesses(guesses)} disabled={!allAssigned}>
+      <Button variant="accent" theme={theme} onClick={() => onSubmit(guesses)} disabled={!allAssigned}>
         {allAssigned ? <>Valider mes devinettes <Check size={18}/></> : `Encore ${shuffledAnswers.length - Object.keys(guesses).length} à deviner`}
       </Button>
+    </div>
+  );
+};
+
+// ============ ÉCRAN DEVINER (BLUFF - PHASE 1 : identifier les bluffs) ============
+const GuessScreenBluffPhase1 = ({ room, playerId, onSubmit, theme, soundEnabled }) => {
+  const [markedAsBluff, setMarkedAsBluff] = useState(new Set());
+  const myBluffGuesses = room.bluffGuesses?.[playerId];
+  const hasSubmitted = !!myBluffGuesses;
+
+  // Toutes les réponses SAUF les miennes (ni ma vraie ni mon bluff)
+  const shuffledAnswers = useMemo(() => {
+    const entries = [];
+    Object.entries(room.answers || {}).forEach(([pid, data]) => {
+      if (pid === playerId) return; // pas mes réponses
+      if (data?.real) entries.push({ answerId: `real_${pid}`, authorId: pid, text: data.real, isBluff: false });
+      if (data?.bluff) entries.push({ answerId: `bluff_${pid}`, authorId: pid, text: data.bluff, isBluff: true });
+    });
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const arr = [...entries];
+    let s = seed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [room.code, room.answers, playerId]);
+
+  const toggleBluff = (answerId) => {
+    playSound(440, 60, soundEnabled);
+    const next = new Set(markedAsBluff);
+    if (next.has(answerId)) next.delete(answerId);
+    else next.add(answerId);
+    setMarkedAsBluff(next);
+  };
+
+  if (hasSubmitted) {
+    return <WaitingScreen room={room} theme={theme} message="Bluffs identifiés" subtitle="Phase 2 bientôt..." icon="🎭" />;
+  }
+
+  // Nombre de bluffs attendus = nombre de bluffs des AUTRES joueurs
+  const expectedBluffCount = Object.entries(room.answers || {})
+    .filter(([pid, data]) => pid !== playerId && data?.bluff).length;
+
+  return (
+    <div style={{ padding: '32px 24px 40px', maxWidth: 480, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: 11, color: theme.purple, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>
+          🎭 Phase 1/2 · Démasquer les bluffs
+        </div>
+        <h2 className="qdq-display" style={{ fontSize: 26, fontWeight: 700, color: theme.text, margin: 0, lineHeight: 1.15 }}>
+          Quelles réponses<br/><span className="qdq-italic" style={{ color: theme.purple }}>sont des bluffs ?</span>
+        </h2>
+        <p style={{ color: theme.textSoft, fontSize: 13, marginTop: 10, maxWidth: 360, margin: '10px auto 0' }}>
+          Tape sur les réponses que tu penses fausses. Tu as marqué <strong style={{ color: theme.text }}>{markedAsBluff.size}</strong> bluff{markedAsBluff.size > 1 ? 's' : ''} sur <strong style={{ color: theme.text }}>{expectedBluffCount}</strong> attendus.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+        {shuffledAnswers.map((entry, i) => {
+          const marked = markedAsBluff.has(entry.answerId);
+          return (
+            <button key={entry.answerId} onClick={() => toggleBluff(entry.answerId)} className="qdq-btn" style={{
+              padding: '18px 20px', textAlign: 'left', cursor: 'pointer',
+              background: marked ? theme.purple + '15' : theme.card,
+              border: `2px solid ${marked ? theme.purple : theme.border}`,
+              borderRadius: 16, position: 'relative', width: '100%'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{
+                  minWidth: 28, height: 28, borderRadius: '50%',
+                  background: marked ? theme.purple : 'transparent',
+                  border: `2px solid ${marked ? theme.purple : theme.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontSize: 14, fontWeight: 700, marginTop: 2
+                }}>
+                  {marked ? '🎭' : ''}
+                </div>
+                <p className="qdq-italic" style={{
+                  fontSize: 17, color: theme.text, margin: 0, lineHeight: 1.4, flex: 1
+                }}>
+                  « {entry.text} »
+                </p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <Button variant="accent" theme={theme} onClick={() => onSubmit(Array.from(markedAsBluff))}>
+        Valider mes choix <Check size={18}/>
+      </Button>
+      <p style={{ textAlign: 'center', fontSize: 12, color: theme.textMuted, marginTop: 12, lineHeight: 1.5 }}>
+        Tu pourras marquer autant de bluffs que tu veux.
+      </p>
+    </div>
+  );
+};
+
+// ============ ÉCRAN DEVINER (BLUFF - PHASE 2 : attribuer les vraies) ============
+const GuessScreenBluffPhase2 = ({ room, playerId, onSubmit, theme, soundEnabled }) => {
+  const [guesses, setGuesses] = useState({});
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const myGuesses = room.guesses?.[playerId];
+  const hasSubmitted = !!myGuesses;
+
+  // Seulement les vraies réponses des autres joueurs
+  const realAnswers = useMemo(() => {
+    const entries = [];
+    Object.entries(room.answers || {}).forEach(([pid, data]) => {
+      if (pid !== playerId && data?.real) {
+        entries.push({ answerId: pid, authorId: pid, text: data.real });
+      }
+    });
+    const seed = room.code.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const arr = [...entries];
+    let s = seed;
+    for (let i = arr.length - 1; i > 0; i--) {
+      s = (s * 9301 + 49297) % 233280;
+      const j = Math.floor((s / 233280) * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, [room.code, room.answers, playerId]);
+
+  const otherPlayers = room.players.filter(p => p.id !== playerId);
+  const usedIds = Object.values(guesses);
+  const currentAnswer = realAnswers[currentIdx];
+  const allAssigned = realAnswers.every(a => guesses[a.answerId]);
+
+  const handleAssign = (targetPlayerId) => {
+    playSound(440, 60, soundEnabled);
+    const newGuesses = { ...guesses };
+    Object.keys(newGuesses).forEach(aid => {
+      if (newGuesses[aid] === targetPlayerId) delete newGuesses[aid];
+    });
+    newGuesses[currentAnswer.answerId] = targetPlayerId;
+    setGuesses(newGuesses);
+
+    const nextIdx = realAnswers.findIndex((a, i) => i > currentIdx && !newGuesses[a.answerId]);
+    if (nextIdx !== -1) setCurrentIdx(nextIdx);
+    else {
+      const firstUnassigned = realAnswers.findIndex(a => !newGuesses[a.answerId]);
+      if (firstUnassigned !== -1) setCurrentIdx(firstUnassigned);
+    }
+  };
+
+  if (hasSubmitted) {
+    return <WaitingScreen room={room} theme={theme} message="Attributions envoyées" subtitle="En attente des autres..." icon="🔮" />;
+  }
+
+  if (realAnswers.length === 0) {
+    return (
+      <div style={{ padding: '40px 24px', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
+        <p style={{ color: theme.textSoft }}>Aucune vraie réponse à attribuer.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '32px 24px 40px', maxWidth: 480, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+        <div style={{ fontSize: 11, color: theme.accent, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>
+          🎭 Phase 2/2 · Attribuer les vraies réponses
+        </div>
+        <h2 className="qdq-display" style={{ fontSize: 26, fontWeight: 700, color: theme.text, margin: 0, lineHeight: 1.15 }}>
+          Qui a vraiment<br/><span className="qdq-italic" style={{ color: theme.accent }}>dit quoi ?</span>
+        </h2>
+        <p style={{ color: theme.textSoft, fontSize: 13, marginTop: 6 }}>
+          Associe chaque vraie réponse à son auteur
+        </p>
+      </div>
+
+      <div className="qdq-scrollbar" style={{ display: 'flex', gap: 6, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
+        {realAnswers.map((a, i) => (
+          <button key={a.answerId} onClick={() => setCurrentIdx(i)} className="qdq-btn" style={{
+            minWidth: 36, height: 36, borderRadius: 10,
+            border: i === currentIdx ? `2px solid ${theme.text}` : `1.5px solid ${theme.border}`,
+            background: guesses[a.answerId] ? theme.dark : theme.card,
+            color: guesses[a.answerId] ? theme.accentText : theme.text,
+            fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: theme.displayFont
+          }}>
+            {i + 1}
+          </button>
+        ))}
+      </div>
+
+      <div className="qdq-pop" key={currentIdx} style={{
+        background: theme.card, border: `2px solid ${theme.text}`, borderRadius: 20,
+        padding: 24, marginBottom: 20, minHeight: 120,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center'
+      }}>
+        <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 700,
+          letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Vraie réponse #{currentIdx + 1}
+        </div>
+        <p className="qdq-italic" style={{ fontSize: 22, color: theme.text, margin: 0, lineHeight: 1.4 }}>
+          « {currentAnswer.text} »
+        </p>
+      </div>
+
+      <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        C'est qui selon toi ?
+      </div>
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+        gap: 8, marginBottom: 24
+      }}>
+        {otherPlayers.map(p => {
+          const isAssignedHere = guesses[currentAnswer.answerId] === p.id;
+          const isAssignedElsewhere = usedIds.includes(p.id) && !isAssignedHere;
+          return (
+            <button key={p.id} onClick={() => handleAssign(p.id)} className="qdq-btn" style={{
+              padding: '12px 6px',
+              background: isAssignedHere ? p.color : theme.card,
+              border: isAssignedHere ? `2px solid ${p.color}` : `1.5px solid ${theme.border}`,
+              borderRadius: 14, cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              opacity: isAssignedElsewhere ? 0.4 : 1
+            }}>
+              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={32} />
+              <div style={{
+                fontSize: 12, fontWeight: 600,
+                color: isAssignedHere ? 'white' : theme.text,
+                textAlign: 'center', whiteSpace: 'nowrap',
+                overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%'
+              }}>
+                {p.name}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <Button variant="accent" theme={theme} onClick={() => onSubmit(guesses)} disabled={!allAssigned}>
+        {allAssigned ? <>Valider mes attributions <Check size={18}/></> : `Encore ${realAnswers.length - Object.keys(guesses).length} à attribuer`}
+      </Button>
+    </div>
+  );
+};
+
+// ============ ÉCRAN ATTENTE ============
+const WaitingScreen = ({ room, theme, message, subtitle, icon = '⏳' }) => {
+  const totalPlayers = room.players.length;
+  const answeredCount = room.phase === 'guessing_bluff_p1'
+    ? Object.keys(room.bluffGuesses || {}).length
+    : Object.keys(room.guesses || {}).length;
+
+  return (
+    <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
+      <div className="qdq-pop" style={{
+        width: 80, height: 80, borderRadius: '50%', background: theme.purple, color: 'white',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        margin: '60px auto 24px', fontSize: 36
+      }}>{icon}</div>
+      <h2 className="qdq-display" style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: 0 }}>
+        {message}
+      </h2>
+      <p style={{ color: theme.textSoft, marginTop: 12, fontSize: 15 }}>{subtitle}</p>
+      <div style={{ marginTop: 32, padding: 20, background: theme.dark, borderRadius: 16 }}>
+        <div className="qdq-display" style={{ fontSize: 48, fontWeight: 800, color: theme.darkIsLight ? theme.bg : theme.bg, lineHeight: 1 }}>
+          {answeredCount}<span style={{ color: theme.textMuted }}>/{totalPlayers}</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -1209,7 +1570,6 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
     return arr;
   }, [room.code, room.answers]);
 
-  // Pour mode "mostLikely" : votes
   const mostLikelyVotes = useMemo(() => {
     if (mode !== 'mostLikely') return null;
     const tally = {};
@@ -1237,36 +1597,45 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
   const roundScores = useMemo(() => {
     const scores = {};
     room.players.forEach(p => scores[p.id] = 0);
-    if (mode === 'mostLikely') {
-      // Pas de score individuel, mais on peut noter quelque chose plus tard
-      return scores;
-    }
-    Object.entries(room.guesses || {}).forEach(([guesserId, guessMap]) => {
-      Object.entries(guessMap).forEach(([answerId, guessedPlayerId]) => {
-        const entry = shuffledEntries.find(e => e.answerId === answerId);
-        if (!entry) return;
-        if (mode === 'bluff') {
-          if (!entry.isBluff && entry.authorId === guessedPlayerId) {
-            // Bonne devinette de la vraie réponse
+    if (mode === 'mostLikely') return scores;
+
+    if (mode === 'bluff') {
+      // Phase 1 : bluffs identifiés correctement
+      Object.entries(room.bluffGuesses || {}).forEach(([guesserId, markedIds]) => {
+        const markedSet = new Set(markedIds);
+        shuffledEntries.forEach(entry => {
+          if (entry.authorId === guesserId) return; // pas ses propres réponses
+          const wasMarked = markedSet.has(entry.answerId);
+          if (entry.isBluff && wasMarked) {
+            // +2 pour avoir identifié un bluff
             scores[guesserId] = (scores[guesserId] || 0) + 2;
           }
-          if (entry.isBluff && guessedPlayerId === entry.authorId) {
-            // Identifier son propre bluff = 0
-          }
-          if (entry.isBluff && guessedPlayerId !== entry.authorId && guessedPlayerId !== guesserId) {
-            // Quelqu'un a cru à un bluff : le bluffeur gagne 1 point
+          if (entry.isBluff && !wasMarked && guesserId !== entry.authorId) {
+            // Crédulité : le bluffeur gagne 1 point
             scores[entry.authorId] = (scores[entry.authorId] || 0) + 1;
           }
-        } else {
-          // Mode classique
-          if (entry.authorId === guessedPlayerId) {
+        });
+      });
+      // Phase 2 : vraies réponses correctement attribuées
+      Object.entries(room.guesses || {}).forEach(([guesserId, guessMap]) => {
+        Object.entries(guessMap).forEach(([answerId, guessedPlayerId]) => {
+          if (answerId === guessedPlayerId) {
             scores[guesserId] = (scores[guesserId] || 0) + 1;
           }
-        }
+        });
       });
-    });
+    } else {
+      // Mode classique
+      Object.entries(room.guesses || {}).forEach(([guesserId, guessMap]) => {
+        Object.entries(guessMap).forEach(([answerId, guessedPlayerId]) => {
+          if (answerId === guessedPlayerId) {
+            scores[guesserId] = (scores[guesserId] || 0) + 1;
+          }
+        });
+      });
+    }
     return scores;
-  }, [room.guesses, room.players, shuffledEntries, mode]);
+  }, [room.guesses, room.bluffGuesses, room.players, shuffledEntries, mode]);
 
   const totalScores = useMemo(() => {
     const totals = { ...(room.settings?.totalScores || {}) };
@@ -1279,15 +1648,13 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
   const sortedPlayers = [...room.players].sort((a, b) => (totalScores[b.id] || 0) - (totalScores[a.id] || 0));
   const allRevealed = revealIdx >= shuffledEntries.length - 1 || mode === 'mostLikely';
 
-  // Est-ce la dernière manche ?
   const currentRound = room.settings?.currentRound || 1;
   const totalRounds = room.settings?.totalRounds || 0;
   const isLastRound = totalRounds > 0 && currentRound >= totalRounds;
 
-  // Affichage spécial pour mode "mostLikely"
+  // Mode "Qui est le plus..."
   if (mode === 'mostLikely') {
-    const sortedVotes = Object.entries(mostLikelyVotes || {})
-      .sort((a, b) => b[1] - a[1]);
+    const sortedVotes = Object.entries(mostLikelyVotes || {}).sort((a, b) => b[1] - a[1]);
     const maxVotes = sortedVotes[0]?.[1] || 0;
 
     return (
@@ -1323,7 +1690,7 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
                 borderRadius: 16, animationDelay: `${i * 0.1}s`
               }}>
                 {isWinner && <div style={{ fontSize: 24 }}>👑</div>}
-                <Avatar emoji={player.emoji} name={player.name} color={player.color} size={40} theme={theme} />
+                <Avatar emoji={player.emoji} name={player.name} color={player.color} size={40} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: theme.text }}>
                     {player.name}
@@ -1338,9 +1705,28 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
               </div>
             );
           })}
+          {/* Joueurs sans vote */}
+          {room.players.filter(p => !mostLikelyVotes?.[p.id]).map(p => (
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: 14,
+              background: theme.card, border: `1.5px solid ${theme.border}`,
+              borderRadius: 16, opacity: 0.5
+            }}>
+              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={40} />
+              <div style={{ flex: 1, fontSize: 16, fontWeight: 500, color: theme.textSoft }}>
+                {p.name}
+              </div>
+              <div style={{ fontSize: 13, color: theme.textMuted }}>0 vote</div>
+            </div>
+          ))}
         </div>
 
-        {renderEndButtons({ isHost, isLastRound, onNext, onEndGame, onLeave, totalScores, theme })}
+        <EndButtons isHost={isHost} isLastRound={isLastRound}
+          onNext={() => onNext(totalScores)}
+          onEndGame={() => onEndGame(totalScores)}
+          onLeave={onLeave}
+          hostName={room.players.find(p => p.id === room.hostId)?.name}
+          theme={theme} />
       </div>
     );
   }
@@ -1374,9 +1760,35 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
         {shuffledEntries.map((entry, i) => {
           const revealed = i <= revealIdx;
           const author = room.players.find(p => p.id === entry.authorId);
-          const correctGuessers = Object.entries(room.guesses || {})
-            .filter(([_, g]) => g[entry.answerId] === entry.authorId)
-            .map(([gid]) => gid);
+
+          // Comptage des bonnes devinettes selon le mode
+          let correctCount = 0;
+          let totalGuessers = 0;
+
+          if (mode === 'bluff') {
+            if (entry.isBluff) {
+              // Bluff : ceux qui l'ont démasqué
+              Object.entries(room.bluffGuesses || {}).forEach(([gid, marks]) => {
+                if (gid === entry.authorId) return;
+                totalGuessers++;
+                if (marks.includes(entry.answerId)) correctCount++;
+              });
+            } else {
+              // Vraie réponse : ceux qui l'ont attribuée au bon auteur
+              Object.entries(room.guesses || {}).forEach(([gid, gmap]) => {
+                if (gid === entry.authorId) return;
+                totalGuessers++;
+                if (gmap[entry.authorId] === entry.authorId) correctCount++;
+              });
+            }
+          } else {
+            // Mode classique
+            Object.entries(room.guesses || {}).forEach(([gid, gmap]) => {
+              if (gid === entry.authorId) return;
+              totalGuessers++;
+              if (gmap[entry.authorId] === entry.authorId) correctCount++;
+            });
+          }
 
           return (
             <div key={entry.answerId} style={{
@@ -1410,7 +1822,7 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
                 {revealed && author ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <Avatar emoji={author.emoji} name={author.name} color={author.color} size={32} theme={theme} />
+                      <Avatar emoji={author.emoji} name={author.name} color={author.color} size={32} />
                       <div>
                         <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                           {entry.isBluff ? 'Bluff de' : "C'était"}
@@ -1420,14 +1832,16 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
                         </div>
                       </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                        {entry.isBluff ? 'Crédulés' : 'Trouvé par'}
+                    {totalGuessers > 0 && (
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                          {entry.isBluff ? 'Démasqué' : 'Trouvé'}
+                        </div>
+                        <div className="qdq-display" style={{ fontSize: 18, fontWeight: 700, color: correctCount > 0 ? theme.success : theme.accent }}>
+                          {correctCount}/{totalGuessers}
+                        </div>
                       </div>
-                      <div className="qdq-display" style={{ fontSize: 18, fontWeight: 700, color: correctGuessers.length > 0 ? theme.success : theme.accent }}>
-                        {correctGuessers.length}/{room.players.length - (entry.isBluff ? 1 : 1)}
-                      </div>
-                    </div>
+                    )}
                   </>
                 ) : (
                   <div className="qdq-pulse" style={{ color: theme.accentText, fontSize: 13, fontWeight: 600, textAlign: 'center', width: '100%' }}>
@@ -1464,7 +1878,7 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
                   }}>
                     {i + 1}
                   </div>
-                  <Avatar emoji={p.emoji} name={p.name} color={p.color} size={34} theme={theme} />
+                  <Avatar emoji={p.emoji} name={p.name} color={p.color} size={34} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 15, fontWeight: 600, color: theme.darkIsLight ? theme.bg : theme.bg }}>
                       {p.name}
@@ -1484,22 +1898,27 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, theme, soun
             </div>
           </div>
 
-          {renderEndButtons({ isHost, isLastRound, onNext, onEndGame, onLeave, totalScores, theme })}
+          <EndButtons isHost={isHost} isLastRound={isLastRound}
+            onNext={() => onNext(totalScores)}
+            onEndGame={() => onEndGame(totalScores)}
+            onLeave={onLeave}
+            hostName={room.players.find(p => p.id === room.hostId)?.name}
+            theme={theme} />
         </div>
       )}
     </div>
   );
 };
 
-const renderEndButtons = ({ isHost, isLastRound, onNext, onEndGame, onLeave, totalScores, theme }) => (
+const EndButtons = ({ isHost, isLastRound, onNext, onEndGame, onLeave, hostName, theme }) => (
   <>
     {isHost ? (
       isLastRound ? (
-        <Button variant="accent" theme={theme} onClick={() => onEndGame(totalScores)}>
+        <Button variant="accent" theme={theme} onClick={onEndGame}>
           <Trophy size={18}/> Voir la fin de partie
         </Button>
       ) : (
-        <Button variant="accent" theme={theme} onClick={() => onNext(totalScores)}>
+        <Button variant="accent" theme={theme} onClick={onNext}>
           <RotateCcw size={18}/> Manche suivante
         </Button>
       )
@@ -1509,7 +1928,7 @@ const renderEndButtons = ({ isHost, isLastRound, onNext, onEndGame, onLeave, tot
         textAlign: 'center', border: `1.5px dashed ${theme.borderDark}`
       }}>
         <div className="qdq-pulse" style={{ fontSize: 14, color: theme.textSoft }}>
-          En attente de l'hôte...
+          En attente de <strong style={{ color: theme.text }}>{hostName}</strong>...
         </div>
       </div>
     )}
@@ -1528,23 +1947,6 @@ const EndGameScreen = ({ room, playerId, onReplay, onLeave, theme, soundEnabled 
   const sortedPlayers = [...room.players].sort((a, b) => (totalScores[b.id] || 0) - (totalScores[a.id] || 0));
   const winner = sortedPlayers[0];
   const isHost = room.hostId === playerId;
-
-  // Stats amusantes
-  const history = room.settings?.history || [];
-
-  // Meilleur devineur (celui qui a accumulé le plus de points)
-  const bestGuesser = sortedPlayers[0];
-
-  // Plus mystérieux : celui qui a été le moins deviné (approximation via les scores)
-  const leastFound = [...room.players].reduce((acc, p) => {
-    const found = history.reduce((sum, h) => {
-      const count = Object.values(h.guesses || {})
-        .filter(g => Object.entries(g).some(([aid, pid]) => pid === p.id && aid.includes(p.id))).length;
-      return sum + count;
-    }, 0);
-    if (!acc || found < acc.found) return { player: p, found };
-    return acc;
-  }, null);
 
   useEffect(() => {
     setTimeout(() => launchConfetti(theme), 300);
@@ -1573,7 +1975,7 @@ const EndGameScreen = ({ room, playerId, onReplay, onLeave, theme, soundEnabled 
           <div className="qdq-grain" style={{ position: 'absolute', inset: 0, opacity: 0.4 }} />
           <div style={{ position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-              <Avatar emoji={winner.emoji} name={winner.name} color={winner.color} size={80} theme={theme} />
+              <Avatar emoji={winner.emoji} name={winner.name} color={winner.color} size={80} />
             </div>
             <div className="qdq-display" style={{ fontSize: 36, fontWeight: 800, color: theme.darkIsLight ? theme.bg : theme.bg, marginBottom: 4 }}>
               {winner.name}
@@ -1610,7 +2012,7 @@ const EndGameScreen = ({ room, playerId, onReplay, onLeave, theme, soundEnabled 
               }}>
                 {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
               </div>
-              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={34} theme={theme} />
+              <Avatar emoji={p.emoji} name={p.name} color={p.color} size={34} />
               <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: theme.text }}>
                 {p.name}
               </div>
@@ -1664,7 +2066,6 @@ export default function App() {
   const prevPhaseRef = useRef(null);
   const theme = THEMES[themeName];
 
-  // Persistence des préférences
   useEffect(() => { localStorage.setItem('qdq_theme', themeName); }, [themeName]);
   useEffect(() => { localStorage.setItem('qdq_sound', soundEnabled); }, [soundEnabled]);
   useEffect(() => { localStorage.setItem('qdq_notif', notifEnabled); }, [notifEnabled]);
@@ -1685,7 +2086,6 @@ export default function App() {
     }
   }, [playerId]);
 
-  // Subscribe au salon
   useEffect(() => {
     if (!roomCode) return;
     saveLocalSession({ roomCode, playerId });
@@ -1696,15 +2096,11 @@ export default function App() {
     return () => { if (unsubRef.current) unsubRef.current(); };
   }, [roomCode]);
 
-  // Notifications sur changement de phase
   useEffect(() => {
     if (!room) return;
     const prevPhase = prevPhaseRef.current;
     const currPhase = room.phase;
     if (prevPhase && prevPhase !== currPhase) {
-      const me = room.players.find(p => p.id === playerId);
-      if (!me) return;
-
       if (currPhase === 'answering' && prevPhase === 'lobby') {
         playSound(700, 150, soundEnabled);
         vibrate([100, 50, 100], soundEnabled);
@@ -1713,12 +2109,12 @@ export default function App() {
           sendPushNotification('Qui a dit quoi', 'La partie commence, à toi de répondre !');
         }
       }
-      if (currPhase === 'guessing' && prevPhase === 'answering') {
+      if ((currPhase === 'guessing' || currPhase === 'guessing_bluff_p1') && prevPhase === 'answering') {
         playSound(500, 150, soundEnabled);
         vibrate([100, 50, 100], soundEnabled);
         if (notifEnabled && document.hidden) {
-          flashTitle('Devine qui a dit quoi !');
-          sendPushNotification('Qui a dit quoi', 'Toutes les réponses sont là, à toi de deviner !');
+          flashTitle('À toi de deviner !');
+          sendPushNotification('Qui a dit quoi', 'Toutes les réponses sont là !');
         }
       }
       if (currPhase === 'results') {
@@ -1753,8 +2149,8 @@ export default function App() {
     const newRoom = {
       code, hostId: playerId, phase: 'lobby',
       players: [{ id: playerId, name, emoji, color }],
-      question: null, answers: {}, guesses: {}, typing: {},
-      settings: { totalScores: {}, currentRound: 0, totalRounds: 0, questionMode: 'classic', history: [] },
+      question: null, answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
+      settings: { totalScores: {}, currentRound: 0, totalRounds: 0, questionMode: 'classic' },
       createdAt: Date.now()
     };
     await storage.setRoom(code, newRoom);
@@ -1766,7 +2162,6 @@ export default function App() {
     const existing = await storage.getRoom(code);
     if (!existing) return false;
     if (existing.phase !== 'lobby') {
-      // Reconnexion possible si déjà dans la salle
       const existingPlayer = existing.players.find(p => p.id === playerId);
       if (existingPlayer) {
         setRoomCode(code);
@@ -1776,7 +2171,6 @@ export default function App() {
       return false;
     }
     if (existing.players.length >= 12) return false;
-    // Remove old entry with same ID
     existing.players = existing.players.filter(p => p.id !== playerId);
     if (existing.players.find(p => p.name.toLowerCase() === name.toLowerCase())) {
       name = `${name}_${Math.floor(Math.random() * 99)}`;
@@ -1790,15 +2184,26 @@ export default function App() {
   };
 
   const handleStart = async (question, questionMode, totalRounds) => {
+    await updateRoom(r => {
+      const gameInProgress = (r.settings?.currentRound || 0) > 0;
+      return {
+        ...r, phase: 'answering', question,
+        answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
+        settings: {
+          ...(r.settings || {}),
+          // Le mode est verrouillé après le début
+          questionMode: gameInProgress ? r.settings.questionMode : questionMode,
+          totalRounds: gameInProgress ? r.settings.totalRounds : (totalRounds || 0),
+          currentRound: (r.settings?.currentRound || 0) + 1
+        }
+      };
+    });
+  };
+
+  const handleUpdateTotalRounds = async (newTotalRounds) => {
     await updateRoom(r => ({
-      ...r, phase: 'answering', question,
-      answers: {}, guesses: {}, typing: {},
-      settings: {
-        ...(r.settings || {}),
-        questionMode,
-        totalRounds: r.settings?.currentRound > 0 ? r.settings.totalRounds : (totalRounds || 0),
-        currentRound: (r.settings?.currentRound || 0) + 1
-      }
+      ...r,
+      settings: { ...(r.settings || {}), totalRounds: newTotalRounds }
     }));
   };
 
@@ -1808,7 +2213,20 @@ export default function App() {
     latest.answers = { ...(latest.answers || {}), [playerId]: { real: answer, bluff } };
     latest.typing = { ...(latest.typing || {}), [playerId]: false };
     if (Object.keys(latest.answers).length === latest.players.length) {
-      latest.phase = 'guessing';
+      const mode = latest.settings?.questionMode;
+      if (mode === 'bluff') latest.phase = 'guessing_bluff_p1';
+      else if (mode === 'mostLikely') latest.phase = 'results';
+      else latest.phase = 'guessing';
+    }
+    await storage.setRoom(roomCode, latest);
+  };
+
+  const handleSubmitBluffGuesses = async (markedAnswerIds) => {
+    const latest = await storage.getRoom(roomCode);
+    if (!latest) return;
+    latest.bluffGuesses = { ...(latest.bluffGuesses || {}), [playerId]: markedAnswerIds };
+    if (Object.keys(latest.bluffGuesses).length === latest.players.length) {
+      latest.phase = 'guessing_bluff_p2';
     }
     await storage.setRoom(roomCode, latest);
   };
@@ -1835,42 +2253,23 @@ export default function App() {
   const handleNextRound = async (newTotalScores) => {
     await updateRoom(r => ({
       ...r, phase: 'lobby', question: null,
-      answers: {}, guesses: {}, typing: {},
-      settings: {
-        ...(r.settings || {}),
-        totalScores: newTotalScores,
-        history: [...(r.settings?.history || []), {
-          question: r.question,
-          answers: r.answers,
-          guesses: r.guesses,
-          mode: r.settings?.questionMode
-        }]
-      }
+      answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
+      settings: { ...(r.settings || {}), totalScores: newTotalScores }
     }));
   };
 
   const handleEndGame = async (finalScores) => {
     await updateRoom(r => ({
       ...r, phase: 'endgame',
-      settings: {
-        ...(r.settings || {}),
-        totalScores: finalScores,
-        history: [...(r.settings?.history || []), {
-          question: r.question, answers: r.answers,
-          guesses: r.guesses, mode: r.settings?.questionMode
-        }]
-      }
+      settings: { ...(r.settings || {}), totalScores: finalScores }
     }));
   };
 
   const handleReplay = async () => {
     await updateRoom(r => ({
       ...r, phase: 'lobby', question: null,
-      answers: {}, guesses: {}, typing: {},
-      settings: {
-        ...(r.settings || {}),
-        totalScores: {}, currentRound: 0, totalRounds: 0, history: []
-      }
+      answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
+      settings: { ...(r.settings || {}), totalScores: {}, currentRound: 0, totalRounds: 0 }
     }));
   };
 
@@ -1912,17 +2311,29 @@ export default function App() {
             onOpenSettings={() => setShowSettings(true)} />
         ) : room.phase === 'lobby' ? (
           <LobbyScreen room={room} playerId={playerId} onStart={handleStart}
-            onLeave={handleLeave} onKick={handleKick} theme={theme}
-            onOpenSettings={() => setShowSettings(true)} soundEnabled={soundEnabled} />
+            onLeave={handleLeave} onKick={handleKick}
+            onUpdateTotalRounds={handleUpdateTotalRounds}
+            theme={theme} onOpenSettings={() => setShowSettings(true)}
+            soundEnabled={soundEnabled} />
         ) : room.phase === 'answering' ? (
           <AnswerScreen room={room} playerId={playerId} onSubmit={handleSubmitAnswer}
             onTyping={handleTyping} theme={theme} soundEnabled={soundEnabled} />
         ) : room.phase === 'guessing' ? (
-          <GuessScreen room={room} playerId={playerId} onSubmitGuesses={handleSubmitGuesses}
+          <GuessScreenClassic room={room} playerId={playerId}
+            onSubmit={handleSubmitGuesses}
+            theme={theme} soundEnabled={soundEnabled} />
+        ) : room.phase === 'guessing_bluff_p1' ? (
+          <GuessScreenBluffPhase1 room={room} playerId={playerId}
+            onSubmit={handleSubmitBluffGuesses}
+            theme={theme} soundEnabled={soundEnabled} />
+        ) : room.phase === 'guessing_bluff_p2' ? (
+          <GuessScreenBluffPhase2 room={room} playerId={playerId}
+            onSubmit={handleSubmitGuesses}
             theme={theme} soundEnabled={soundEnabled} />
         ) : room.phase === 'results' ? (
-          <ResultsScreen room={room} playerId={playerId} onNext={handleNextRound}
-            onEndGame={handleEndGame} onLeave={handleLeave} theme={theme} soundEnabled={soundEnabled} />
+          <ResultsScreen room={room} playerId={playerId}
+            onNext={handleNextRound} onEndGame={handleEndGame} onLeave={handleLeave}
+            theme={theme} soundEnabled={soundEnabled} />
         ) : room.phase === 'endgame' ? (
           <EndGameScreen room={room} playerId={playerId} onReplay={handleReplay}
             onLeave={handleLeave} theme={theme} soundEnabled={soundEnabled} />
