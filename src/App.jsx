@@ -622,15 +622,12 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
       <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 20, marginBottom: 32 }}>
         <div style={{
           display: 'inline-block',
-          background: theme.name === 'Persona' ? '#2a2838' : (theme.darkIsLight ? '#2a2838' : 'white'),
+          background: '#c9d7f0',
           borderRadius: 20,
-          padding: '8px 22px',
-          boxShadow: theme.name === 'Persona'
-            ? '0 10px 32px rgba(184, 75, 222, 0.2), 0 4px 12px rgba(74, 98, 216, 0.12)'
-            : '0 8px 28px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06)',
+          padding: 12,
+          boxShadow: '0 10px 32px rgba(74, 98, 216, 0.18), 0 4px 12px rgba(74, 98, 216, 0.1)',
           marginBottom: 4,
           maxWidth: '100%',
-          position: 'relative',
           lineHeight: 0
         }}>
           <img src="/persona-logo.png" alt="PERSONA"
