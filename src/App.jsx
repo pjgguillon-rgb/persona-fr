@@ -94,7 +94,7 @@ const THEMES = {
     card: '#ffffff', dark: '#1e1b3a',
     accent: '#e63d82', accentBg: '#b84bde', accentText: '#b84bde',
     success: '#4ade80', purple: '#4a62d8',
-    displayFont: "'Fraunces', Georgia, serif",
+    displayFont: "'Poppins', -apple-system, sans-serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 15% 20%, rgba(74, 98, 216, 0.12), transparent 45%),
             radial-gradient(circle at 85% 75%, rgba(230, 61, 130, 0.12), transparent 45%),
@@ -108,7 +108,7 @@ const THEMES = {
     card: '#faf7f2', dark: '#1a1a1a',
     accent: '#E94F37', accentBg: '#F5B841', accentText: '#F5B841',
     success: '#4CB944', purple: '#9B5DE5',
-    displayFont: "'Fraunces', Georgia, serif",
+    displayFont: "'Poppins', -apple-system, sans-serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 20% 30%, rgba(233, 79, 55, 0.08), transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(155, 93, 229, 0.08), transparent 50%),
@@ -121,7 +121,7 @@ const THEMES = {
     card: '#1a1822', dark: '#f0ebe0',
     accent: '#ff6b47', accentBg: '#ffa726', accentText: '#ffa726',
     success: '#5FD068', purple: '#b57dff',
-    displayFont: "'Fraunces', Georgia, serif",
+    displayFont: "'Poppins', -apple-system, sans-serif",
     bodyFont: "'DM Sans', sans-serif",
     darkIsLight: true,
     grain: `radial-gradient(circle at 20% 30%, rgba(255, 107, 71, 0.12), transparent 50%),
@@ -135,7 +135,7 @@ const THEMES = {
     card: '#fff0f5', dark: '#2d0a4e',
     accent: '#ff006e', accentBg: '#ffbe0b', accentText: '#ffbe0b',
     success: '#06d6a0', purple: '#8338ec',
-    displayFont: "'Fraunces', Georgia, serif",
+    displayFont: "'Poppins', -apple-system, sans-serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 15% 25%, rgba(255, 0, 110, 0.15), transparent 45%),
             radial-gradient(circle at 85% 60%, rgba(131, 56, 236, 0.15), transparent 45%),
@@ -149,7 +149,7 @@ const THEMES = {
     card: '#f4e8d0', dark: '#3a2817',
     accent: '#d2691e', accentBg: '#e8b04e', accentText: '#e8b04e',
     success: '#739e82', purple: '#a56cc1',
-    displayFont: "'Fraunces', Georgia, serif",
+    displayFont: "'Poppins', -apple-system, sans-serif",
     bodyFont: "'DM Sans', sans-serif",
     grain: `radial-gradient(circle at 20% 30%, rgba(210, 105, 30, 0.1), transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(165, 108, 193, 0.08), transparent 50%)`
@@ -232,10 +232,10 @@ const requestNotifPermission = async () => {
 // ============ STYLES ============
 const GlobalStyles = ({ theme }) => (
   <style>{`
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,600&family=DM+Sans:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap');
     .qdq-root * { font-family: ${theme.bodyFont}; box-sizing: border-box; }
-    .qdq-display { font-family: ${theme.displayFont}; font-optical-sizing: auto; letter-spacing: -0.02em; }
-    .qdq-italic { font-family: ${theme.displayFont}; font-style: italic; font-weight: 600; }
+    .qdq-display { font-family: ${theme.displayFont}; letter-spacing: -0.01em; }
+    .qdq-italic { font-family: ${theme.displayFont}; font-weight: 600; letter-spacing: 0.02em; }
     @keyframes qdq-fadeup { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes qdq-pop { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.03); } 100% { transform: scale(1); opacity: 1; } }
     @keyframes qdq-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -583,19 +583,22 @@ const ModeInfoModal = ({ mode, onClose, theme }) => (
 
 // ============ ÉCRAN ACCUEIL ============
 const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSettings }) => {
-  const [mode, setMode] = useState('home');
+  const [mode, setMode] = useState('home'); // home | create | join
+  const [createStep, setCreateStep] = useState('mode'); // mode | identity
+  const [selectedGameMode, setSelectedGameMode] = useState('classic');
   const [name, setName] = useState(() => localStorage.getItem('qdq_lastName') || '');
   const [code, setCode] = useState('');
   const [emoji, setEmoji] = useState(() => localStorage.getItem('qdq_lastEmoji') || EMOJI_AVATARS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showModeInfo, setShowModeInfo] = useState(null);
 
   const handleCreate = async () => {
     if (!name.trim()) return setError('Entre ton prénom');
     localStorage.setItem('qdq_lastName', name.trim());
     localStorage.setItem('qdq_lastEmoji', emoji);
     setLoading(true); setError('');
-    await onCreate(name.trim(), emoji);
+    await onCreate(name.trim(), emoji, selectedGameMode);
     setLoading(false);
   };
 
@@ -606,7 +609,7 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
     localStorage.setItem('qdq_lastEmoji', emoji);
     setLoading(true); setError('');
     const ok = await onJoin(name.trim(), code.toUpperCase(), emoji);
-    if (!ok) setError('Salon introuvable ou partie déjà commencée');
+    if (!ok) setError('Partie introuvable ou déjà commencée');
     setLoading(false);
   };
 
@@ -622,10 +625,10 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
       <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 20, marginBottom: 32 }}>
         <div style={{
           display: 'inline-block',
-          background: '#c9d7f0',
+          background: '#ffd9c2',
           borderRadius: 20,
           padding: 12,
-          boxShadow: '0 10px 32px rgba(74, 98, 216, 0.18), 0 4px 12px rgba(74, 98, 216, 0.1)',
+          boxShadow: '0 10px 32px rgba(255, 140, 90, 0.2), 0 4px 12px rgba(230, 61, 130, 0.12)',
           marginBottom: 4,
           maxWidth: '100%',
           lineHeight: 0
@@ -664,10 +667,10 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
       {mode === 'home' && (
         <div className="qdq-fadeup" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Button variant="primary" theme={theme} onClick={() => setMode('create')}>
-            <Plus size={18} /> Créer un salon
+            <Plus size={18} /> Créer une partie
           </Button>
           <Button variant="secondary" theme={theme} onClick={() => setMode('join')}>
-            <ArrowRight size={18} /> Rejoindre un salon
+            <ArrowRight size={18} /> Rejoindre une partie
           </Button>
 
           <div style={{ marginTop: 28 }}>
@@ -697,8 +700,84 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
         </div>
       )}
 
-      {mode !== 'home' && (
+      {showModeInfo && <ModeInfoModal mode={showModeInfo} onClose={() => setShowModeInfo(null)} theme={theme} />}
+
+      {mode === 'create' && createStep === 'mode' && (
         <div className="qdq-fadeup" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 12, display: 'block', textAlign: 'center' }}>
+              Choisis le mode de jeu
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {Object.values(GAME_MODES).map(m => (
+                <button key={m.key} onClick={() => setSelectedGameMode(m.key)} className="qdq-btn" style={{
+                  padding: 16, borderRadius: 16, textAlign: 'left',
+                  background: selectedGameMode === m.key ? theme.accent + '15' : theme.card,
+                  border: `2px solid ${selectedGameMode === m.key ? theme.accent : theme.border}`,
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 14
+                }}>
+                  <div style={{ fontSize: 28 }}>{m.icon}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: theme.text, marginBottom: 2 }}>
+                      {m.label}
+                    </div>
+                    <div style={{ fontSize: 12, color: theme.textSoft, lineHeight: 1.4 }}>
+                      {m.shortDesc}
+                      {m.minPlayers > 2 && ` · min ${m.minPlayers} joueurs`}
+                      {m.maxPlayers === 2 && ` · 2 joueurs uniquement`}
+                    </div>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); setShowModeInfo(m); }} style={{
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    padding: 6, color: theme.textSoft, display: 'flex', alignItems: 'center'
+                  }}>
+                    <Info size={16} />
+                  </button>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button variant="accent" theme={theme} onClick={() => setCreateStep('identity')}>
+            Continuer <ArrowRight size={18} />
+          </Button>
+
+          <button onClick={() => { setMode('home'); setError(''); }}
+            style={{ background: 'none', border: 'none', color: theme.textSoft,
+              fontSize: 14, cursor: 'pointer', padding: 8 }}>
+            ← Retour
+          </button>
+        </div>
+      )}
+
+      {((mode === 'create' && createStep === 'identity') || mode === 'join') && (
+        <div className="qdq-fadeup" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {mode === 'create' && (
+            <div style={{
+              padding: 12, background: theme.card, borderRadius: 12,
+              border: `1.5px solid ${theme.border}`,
+              display: 'flex', alignItems: 'center', gap: 10
+            }}>
+              <div style={{ fontSize: 22 }}>{GAME_MODES[selectedGameMode].icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  Mode choisi
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: theme.text }}>
+                  {GAME_MODES[selectedGameMode].label}
+                </div>
+              </div>
+              <button onClick={() => setCreateStep('mode')} style={{
+                background: 'transparent', border: `1px solid ${theme.border}`,
+                color: theme.textSoft, fontSize: 11, cursor: 'pointer',
+                padding: '4px 10px', borderRadius: 100
+              }}>
+                Changer
+              </button>
+            </div>
+          )}
+
           <div>
             <label style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 8, display: 'block' }}>
               Choisis ton avatar
@@ -734,7 +813,7 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
           {mode === 'join' && (
             <div>
               <label style={{ fontSize: 13, fontWeight: 600, color: theme.text, marginBottom: 8, display: 'block' }}>
-                Code du salon
+                Code de la partie
               </label>
               <input type="text" value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 5))}
@@ -750,10 +829,14 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
           {error && <div className="qdq-shake" style={{ color: theme.accent, fontSize: 14, textAlign: 'center' }}>{error}</div>}
 
           <Button variant="accent" theme={theme} onClick={mode === 'create' ? handleCreate : handleJoin} disabled={loading}>
-            {loading ? 'Connexion...' : (mode === 'create' ? 'Créer le salon' : 'Rejoindre')}
+            {loading ? 'Connexion...' : (mode === 'create' ? 'Créer la partie' : 'Rejoindre')}
           </Button>
 
-          <button onClick={() => { setMode('home'); setError(''); }}
+          <button onClick={() => {
+            if (mode === 'create' && createStep === 'identity') { setCreateStep('mode'); }
+            else { setMode('home'); }
+            setError('');
+          }}
             style={{ background: 'none', border: 'none', color: theme.textSoft,
               fontSize: 14, cursor: 'pointer', padding: 8 }}>
             ← Retour
@@ -762,7 +845,7 @@ const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSe
       )}
 
       <div style={{ marginTop: 60, textAlign: 'center', color: theme.textMuted, fontSize: 12, lineHeight: 1.6 }}>
-        <p>Les salons sont partagés entre tous les joueurs.<br/>Partagez le code avec vos amis.</p>
+        <p>Les parties sont partagées entre tous les joueurs.<br/>Partagez le code avec vos amis.</p>
       </div>
     </div>
   );
@@ -846,7 +929,7 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
         }}>← Quitter</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ fontSize: 12, color: theme.textSoft, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            Salon
+            Partie
           </div>
           <button onClick={onOpenSettings} className="qdq-btn" style={{
             background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, color: theme.textSoft
@@ -972,61 +1055,28 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
               </div>
             );
           })()}
-          {/* Mode de question - verrouillé si partie en cours */}
-          <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-            Mode de jeu
-            {gameInProgress && <span style={{ color: theme.textMuted, fontSize: 10 }}>🔒 verrouillé</span>}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 10 }}>
-            {Object.values(GAME_MODES)
-              .filter(m => {
-                const np = room.players.length;
-                if (m.minPlayers && np < m.minPlayers) return false;
-                if (m.maxPlayers && np > m.maxPlayers) return false;
-                return true;
-              })
-              .map(m => (
-              <button key={m.key}
-                onClick={() => !gameInProgress && setQuestionMode(m.key)}
-                disabled={gameInProgress && questionMode !== m.key}
-                className="qdq-btn"
-                style={{
-                  padding: '10px 8px', borderRadius: 12,
-                  background: questionMode === m.key ? theme.dark : theme.card,
-                  color: questionMode === m.key ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
-                  border: `1.5px solid ${questionMode === m.key ? theme.dark : theme.border}`,
-                  cursor: gameInProgress && questionMode !== m.key ? 'not-allowed' : 'pointer',
-                  opacity: gameInProgress && questionMode !== m.key ? 0.3 : 1,
-                  fontSize: 13, fontWeight: 600,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{m.icon}</span>
-                {m.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Description du mode sélectionné */}
+          {/* Mode de jeu verrouillé : affichage seul */}
           <div style={{
-            padding: 12, background: theme.card, borderRadius: 12,
-            border: `1px solid ${theme.border}`, marginBottom: 16,
-            display: 'flex', alignItems: 'flex-start', gap: 10
+            padding: 14, background: theme.accent + '10', borderRadius: 14,
+            border: `1.5px solid ${theme.accent}40`, marginBottom: 18,
+            display: 'flex', alignItems: 'center', gap: 12
           }}>
-            <div style={{ fontSize: 20, flexShrink: 0 }}>{currentModeData.icon}</div>
+            <div style={{ fontSize: 28, flexShrink: 0 }}>{currentModeData.icon}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, color: theme.textSoft, lineHeight: 1.4 }}>
-                {currentModeData.shortDesc}. {currentModeData.description}
+              <div style={{ fontSize: 11, color: theme.textSoft, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 2 }}>
+                Mode de jeu
               </div>
-              <button onClick={() => setShowModeInfo(currentModeData)} style={{
-                background: 'transparent', border: 'none',
-                color: theme.accent, fontSize: 12, fontWeight: 600,
-                cursor: 'pointer', padding: '4px 0', marginTop: 4,
-                display: 'inline-flex', alignItems: 'center', gap: 4
-              }}>
-                <Info size={12} /> Détails & points
-              </button>
+              <div style={{ fontSize: 15, fontWeight: 700, color: theme.text }}>
+                {currentModeData.label}
+              </div>
             </div>
+            <button onClick={() => setShowModeInfo(currentModeData)} style={{
+              background: 'transparent', border: 'none',
+              color: theme.accent, cursor: 'pointer', padding: 6,
+              display: 'flex', alignItems: 'center'
+            }}>
+              <Info size={18} />
+            </button>
           </div>
 
           {/* Nombre de manches */}
@@ -2491,7 +2541,7 @@ const EndButtons = ({ isHost, isLastRound, onNext, onEndGame, onLeave, hostName,
       background: 'transparent', border: 'none', color: theme.textSoft,
       fontSize: 13, cursor: 'pointer', padding: 12, width: '100%', marginTop: 8
     }}>
-      Quitter le salon
+      Quitter la partie
     </button>
   </>
 );
@@ -2591,7 +2641,7 @@ const EndGameScreen = ({ room, playerId, onReplay, onLeave, onOpenSettings, them
             <RotateCcw size={18}/> Nouvelle partie (même équipe)
           </Button>
           <Button variant="secondary" theme={theme} onClick={onLeave}>
-            Quitter le salon
+            Quitter la partie
           </Button>
         </div>
       ) : (
@@ -2698,7 +2748,7 @@ export default function App() {
     await storage.setRoom(roomCode, updated);
   };
 
-  const handleCreate = async (name, emoji) => {
+  const handleCreate = async (name, emoji, gameMode = 'classic') => {
     let code;
     let attempt = 0;
     while (attempt < 10) {
@@ -2712,7 +2762,7 @@ export default function App() {
       code, hostId: playerId, phase: 'lobby',
       players: [{ id: playerId, name, emoji, color }],
       question: null, answers: {}, guesses: {}, bluffGuesses: {}, typing: {},
-      settings: { totalScores: {}, currentRound: 0, totalRounds: 0, questionMode: 'classic' },
+      settings: { totalScores: {}, currentRound: 0, totalRounds: 0, questionMode: gameMode, modeLocked: true },
       createdAt: Date.now()
     };
     await storage.setRoom(code, newRoom);
