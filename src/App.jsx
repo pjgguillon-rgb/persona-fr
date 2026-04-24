@@ -51,15 +51,17 @@ const GAME_MODES = {
     icon: '💬',
     shortDesc: 'Le mode original',
     description: 'Chacun répond à la question. Les réponses sont mélangées et tout le monde doit deviner qui a dit quoi.',
-    scoring: '1 point par bonne devinette'
+    scoring: '1 point par bonne devinette',
+    minPlayers: 3
   },
   bluff: {
     key: 'bluff',
     label: 'Bluff',
     icon: '🎭',
     shortDesc: 'Avec fausses réponses',
-    description: 'Chacun écrit 1 vraie réponse + 1 fausse (bluff). Phase 1 : devinez quelles réponses sont des bluffs. Phase 2 : associez les vraies réponses à leur auteur.',
-    scoring: '+2 par bluff démasqué · +1 par vraie réponse trouvée · +1 si votre bluff trompe quelqu\'un'
+    description: 'Chacun écrit 1 vraie réponse + 1 fausse (bluff). Phase 1 : devinez quelles réponses sont des bluffs. Phase 2 (3+ joueurs) : associez les vraies réponses à leur auteur.',
+    scoring: '+2 par bluff démasqué · +1 par vraie réponse trouvée · +1 si votre bluff trompe quelqu\'un',
+    minPlayers: 2
   },
   mostLikely: {
     key: 'mostLikely',
@@ -67,7 +69,18 @@ const GAME_MODES = {
     icon: '👉',
     shortDesc: 'Vote pour un joueur',
     description: 'Au lieu d\'écrire une réponse, chacun vote secrètement pour un joueur du groupe. Révélation du verdict à la fin.',
-    scoring: 'Pas de score — juste pour le fun et la discussion 😄'
+    scoring: 'Pas de score — juste pour le fun et la discussion 😄',
+    minPlayers: 2
+  },
+  duo: {
+    key: 'duo',
+    label: 'Duo',
+    icon: '💞',
+    shortDesc: 'Spécial 2 joueurs',
+    description: 'À deux, vous répondez chacun à la question pour vous-même ET vous essayez de deviner ce que l\'autre a répondu. Les deux réponses s\'affichent côte à côte pour comparer.',
+    scoring: 'Pas de score — vous apprenez à vous connaître 💕',
+    minPlayers: 2,
+    maxPlayers: 2
   }
 };
 
@@ -521,7 +534,7 @@ const ModeInfoModal = ({ mode, onClose, theme }) => (
 );
 
 // ============ ÉCRAN ACCUEIL ============
-const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
+const HomeScreen = ({ onCreate, onJoin, theme, themeName, setThemeName, onOpenSettings }) => {
   const [mode, setMode] = useState('home');
   const [name, setName] = useState(() => localStorage.getItem('qdq_lastName') || '');
   const [code, setCode] = useState('');
@@ -558,22 +571,33 @@ const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
         <Settings size={22} />
       </button>
 
-      <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 40, marginBottom: 48 }}>
-        <div style={{
-          display: 'inline-block', padding: '6px 14px', background: theme.dark,
-          color: theme.accentText, borderRadius: 100, fontSize: 11, fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20
-        }}>
-          ✦ Jeu entre amis
-        </div>
+      <div className="qdq-fadeup" style={{ textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+        <img src="/persona-logo.png" alt="PERSONA"
+          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+          style={{ maxWidth: '100%', width: 340, height: 'auto', margin: '0 auto', display: 'block' }}
+        />
         <h1 className="qdq-display" style={{
-          fontSize: 64, fontWeight: 800, margin: 0, lineHeight: 0.95, color: theme.text
+          display: 'none',
+          fontSize: 64, fontWeight: 800, margin: 0, lineHeight: 0.95,
+          background: `linear-gradient(90deg, #2d3a9e 0%, #9b2dc6 50%, #d62d5e 100%)`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
         }}>
-          Qui a dit<br/>
-          <span className="qdq-italic" style={{ color: theme.accent }}>quoi ?</span>
+          PERSON<span style={{
+            display: 'inline-block',
+            background: `conic-gradient(from 0deg, #2d3a9e, #9b2dc6, #d62d5e, #f5a623, #2d3a9e)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>?</span>
+          <span>A</span>
         </h1>
-        <p style={{ marginTop: 16, color: theme.textSoft, fontSize: 16, lineHeight: 1.5, maxWidth: 320, margin: '16px auto 0' }}>
-          Une question. Tout le monde répond en secret. Devinez qui a dit quoi.
+        <p className="qdq-italic" style={{
+          marginTop: 12, color: theme.textSoft, fontSize: 15, lineHeight: 1.4,
+          maxWidth: 340, margin: '12px auto 0', fontWeight: 500
+        }}>
+          Jouez, démasquez, apprenez à vous connaître
         </p>
       </div>
 
@@ -585,6 +609,31 @@ const HomeScreen = ({ onCreate, onJoin, theme, onOpenSettings }) => {
           <Button variant="secondary" theme={theme} onClick={() => setMode('join')}>
             <ArrowRight size={18} /> Rejoindre un salon
           </Button>
+
+          <div style={{ marginTop: 28 }}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, color: theme.textSoft,
+              textTransform: 'uppercase', letterSpacing: '0.12em',
+              textAlign: 'center', marginBottom: 12,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+            }}>
+              <Palette size={12} /> Ambiance
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {Object.entries(THEMES).map(([key, t]) => (
+                <button key={key} onClick={() => setThemeName(key)} className="qdq-btn" style={{
+                  padding: '8px 12px', borderRadius: 100,
+                  background: themeName === key ? theme.dark : 'transparent',
+                  color: themeName === key ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
+                  border: `1.5px solid ${themeName === key ? theme.dark : theme.border}`,
+                  cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  display: 'inline-flex', alignItems: 'center', gap: 6
+                }}>
+                  <span>{t.icon}</span> {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -667,9 +716,20 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
 
   // Si la partie a déjà commencé, on utilise le mode et le nombre de manches du salon
   const gameInProgress = (room.settings?.currentRound || 0) > 0;
-  const [questionMode, setQuestionMode] = useState(gameInProgress ? room.settings.questionMode : 'classic');
+  const np = room.players.length;
+  const defaultMode = np === 2 ? 'duo' : 'classic';
+  const [questionMode, setQuestionMode] = useState(gameInProgress ? room.settings.questionMode : defaultMode);
   const [totalRounds, setTotalRounds] = useState(room.settings?.totalRounds || 0);
   const [showModeInfo, setShowModeInfo] = useState(null);
+
+  // Auto-correction : si le mode sélectionné n'est plus dispo pour ce nombre de joueurs
+  useEffect(() => {
+    if (gameInProgress) return;
+    const m = GAME_MODES[questionMode];
+    if (!m) { setQuestionMode(defaultMode); return; }
+    if (m.minPlayers && np < m.minPlayers) setQuestionMode(defaultMode);
+    if (m.maxPlayers && np > m.maxPlayers) setQuestionMode(defaultMode);
+  }, [np, gameInProgress]);
 
   // Si la partie est en cours, forcer le mode utilisé
   useEffect(() => {
@@ -803,31 +863,75 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
         </div>
       </div>
 
-      {isHost ? (
+      {/* Détermination du joueur actuel qui doit poser la question (tour de rôle) */}
+      {(() => {
+        const questionMasterIdx = (room.settings?.currentRound || 0) % room.players.length;
+        const questionMasterId = room.players[questionMasterIdx]?.id;
+        const isMyTurn = questionMasterId === playerId;
+        const questionMaster = room.players[questionMasterIdx];
+        window._isMyTurn = isMyTurn;
+        window._questionMaster = questionMaster;
+        return null;
+      })()}
+      {(() => {
+        const questionMasterIdx = (room.settings?.currentRound || 0) % room.players.length;
+        const questionMasterId = room.players[questionMasterIdx]?.id;
+        const isMyTurn = questionMasterId === playerId;
+        const questionMaster = room.players[questionMasterIdx];
+        return isMyTurn;
+      })() ? (
         <div className="qdq-fadeup">
+          {(() => {
+            const questionMasterIdx = (room.settings?.currentRound || 0) % room.players.length;
+            const questionMaster = room.players[questionMasterIdx];
+            return (
+              <div style={{
+                padding: 14, background: theme.accentBg + '30', borderRadius: 14,
+                border: `1.5px solid ${theme.accentBg}`, marginBottom: 20,
+                display: 'flex', alignItems: 'center', gap: 10
+              }}>
+                <Avatar emoji={questionMaster?.emoji} name={questionMaster?.name} color={questionMaster?.color} size={36} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    C'est à toi de poser
+                  </div>
+                  <div style={{ fontSize: 13, color: theme.textSoft }}>
+                    Manche {(room.settings?.currentRound || 0) + 1} — tour de {questionMaster?.name}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           {/* Mode de question - verrouillé si partie en cours */}
           <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
             Mode de jeu
             {gameInProgress && <span style={{ color: theme.textMuted, fontSize: 10 }}>🔒 verrouillé</span>}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 }}>
-            {Object.values(GAME_MODES).map(m => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 10 }}>
+            {Object.values(GAME_MODES)
+              .filter(m => {
+                const np = room.players.length;
+                if (m.minPlayers && np < m.minPlayers) return false;
+                if (m.maxPlayers && np > m.maxPlayers) return false;
+                return true;
+              })
+              .map(m => (
               <button key={m.key}
                 onClick={() => !gameInProgress && setQuestionMode(m.key)}
                 disabled={gameInProgress && questionMode !== m.key}
                 className="qdq-btn"
                 style={{
-                  padding: '10px 6px', borderRadius: 12,
+                  padding: '10px 8px', borderRadius: 12,
                   background: questionMode === m.key ? theme.dark : theme.card,
                   color: questionMode === m.key ? (theme.darkIsLight ? theme.bg : theme.bg) : theme.text,
                   border: `1.5px solid ${questionMode === m.key ? theme.dark : theme.border}`,
                   cursor: gameInProgress && questionMode !== m.key ? 'not-allowed' : 'pointer',
                   opacity: gameInProgress && questionMode !== m.key ? 0.3 : 1,
-                  fontSize: 12, fontWeight: 600,
+                  fontSize: 13, fontWeight: 600,
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4
                 }}
               >
-                <span style={{ fontSize: 18 }}>{m.icon}</span>
+                <span style={{ fontSize: 22 }}>{m.icon}</span>
                 {m.label}
               </button>
             ))}
@@ -922,31 +1026,45 @@ const LobbyScreen = ({ room, playerId, onStart, onLeave, onKick, onUpdateTotalRo
         </div>
       ) : (
         <div className="qdq-fadeup">
-          {gameInProgress && (
-            <div style={{
-              padding: 12, background: theme.card, borderRadius: 12,
-              border: `1px solid ${theme.border}`, marginBottom: 16,
-              display: 'flex', alignItems: 'flex-start', gap: 10
-            }}>
-              <div style={{ fontSize: 20, flexShrink: 0 }}>{GAME_MODES[room.settings.questionMode]?.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 2 }}>
-                  Mode {GAME_MODES[room.settings.questionMode]?.label}
+          {(() => {
+            const questionMasterIdx = (room.settings?.currentRound || 0) % room.players.length;
+            const questionMaster = room.players[questionMasterIdx];
+            return (
+              <>
+                {gameInProgress && (
+                  <div style={{
+                    padding: 12, background: theme.card, borderRadius: 12,
+                    border: `1px solid ${theme.border}`, marginBottom: 16,
+                    display: 'flex', alignItems: 'flex-start', gap: 10
+                  }}>
+                    <div style={{ fontSize: 20, flexShrink: 0 }}>{GAME_MODES[room.settings.questionMode]?.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 2 }}>
+                        Mode {GAME_MODES[room.settings.questionMode]?.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: theme.textSoft, lineHeight: 1.4 }}>
+                        {GAME_MODES[room.settings.questionMode]?.shortDesc}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div style={{
+                  padding: 20, background: theme.card, borderRadius: 14,
+                  textAlign: 'center', border: `1.5px dashed ${theme.borderDark}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: 10 }}>
+                    <Avatar emoji={questionMaster?.emoji} name={questionMaster?.name} color={questionMaster?.color} size={32} />
+                    <div style={{ fontSize: 15, fontWeight: 600, color: theme.text }}>
+                      Tour de {questionMaster?.name}
+                    </div>
+                  </div>
+                  <div className="qdq-pulse" style={{ fontSize: 14, color: theme.textSoft }}>
+                    {questionMaster?.name} est en train de choisir une question...
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: theme.textSoft, lineHeight: 1.4 }}>
-                  {GAME_MODES[room.settings.questionMode]?.shortDesc}
-                </div>
-              </div>
-            </div>
-          )}
-          <div style={{
-            padding: 20, background: theme.card, borderRadius: 14,
-            textAlign: 'center', border: `1.5px dashed ${theme.borderDark}`
-          }}>
-            <div className="qdq-pulse" style={{ fontSize: 15, color: theme.textSoft }}>
-              En attente de <strong style={{ color: theme.text }}>{room.players.find(p => p.id === room.hostId)?.name}</strong> pour lancer...
-            </div>
-          </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
@@ -974,6 +1092,18 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, onLeave, onOpenSetti
       }}
       onLeave={onLeave} onOpenSettings={onOpenSettings}
       theme={theme} />;
+  }
+
+  // Mode Duo : composant dédié
+  if (mode === 'duo') {
+    return <DuoAnswerScreen room={room} playerId={playerId}
+      onSubmit={(myAnswer, myGuess) => {
+        playSound(880, 100, soundEnabled);
+        vibrate(50, soundEnabled);
+        onSubmit(myAnswer, myGuess);
+      }}
+      onLeave={onLeave} onOpenSettings={onOpenSettings}
+      onTyping={onTyping} theme={theme} />;
   }
 
   useEffect(() => {
@@ -1104,6 +1234,127 @@ const AnswerScreen = ({ room, playerId, onSubmit, onTyping, onLeave, onOpenSetti
 
       <p style={{ textAlign: 'center', fontSize: 12, color: theme.textMuted, marginTop: 16, lineHeight: 1.5 }}>
         🔒 Personne ne verra tes réponses avant que tout le monde ait répondu.
+      </p>
+    </div>
+  );
+};
+
+// ============ ÉCRAN RÉPONSE MODE DUO ============
+const DuoAnswerScreen = ({ room, playerId, onSubmit, onLeave, onOpenSettings, onTyping, theme }) => {
+  const [myAnswer, setMyAnswer] = useState('');
+  const [myGuess, setMyGuess] = useState('');
+  const me = room.players.find(p => p.id === playerId);
+  const other = room.players.find(p => p.id !== playerId);
+  const mySubmission = room.answers?.[playerId];
+  const otherSubmission = room.answers?.[other?.id];
+
+  useEffect(() => {
+    if (mySubmission) return;
+    if (myAnswer.length > 0 || myGuess.length > 0) {
+      onTyping(true);
+      const t = setTimeout(() => onTyping(false), 2000);
+      return () => clearTimeout(t);
+    } else {
+      onTyping(false);
+    }
+  }, [myAnswer, myGuess, mySubmission]);
+
+  const handleSubmit = () => {
+    if (!myAnswer.trim() || !myGuess.trim()) return;
+    onSubmit(myAnswer.trim(), myGuess.trim());
+  };
+
+  if (mySubmission) {
+    return (
+      <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto' }}>
+        <TopBar room={room} playerId={playerId} onLeave={onLeave} onOpenSettings={onOpenSettings} theme={theme} showPhase={true} />
+        <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <div className="qdq-pop" style={{
+            width: 80, height: 80, borderRadius: '50%', background: theme.success, color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px', fontSize: 40
+          }}>✓</div>
+          <h2 className="qdq-display" style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: 0 }}>
+            Réponses envoyées
+          </h2>
+          <p style={{ color: theme.textSoft, marginTop: 12, fontSize: 15 }}>
+            {otherSubmission ? 'Révélation imminente...' : `En attente de ${other?.name}...`}
+          </p>
+          <div style={{ marginTop: 32, padding: 20, background: theme.dark, borderRadius: 16 }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ opacity: mySubmission ? 1 : 0.3 }}>
+                <Avatar emoji={me.emoji} name={me.name} color={me.color} size={40} />
+                <div style={{ fontSize: 11, color: theme.darkIsLight ? theme.bg : theme.bg, fontWeight: 600, marginTop: 4 }}>toi ✓</div>
+              </div>
+              <div style={{ color: theme.textMuted, fontSize: 20 }}>·</div>
+              <div style={{ opacity: otherSubmission ? 1 : 0.3 }}>
+                <Avatar emoji={other?.emoji} name={other?.name} color={other?.color} size={40} />
+                <div style={{ fontSize: 11, color: theme.darkIsLight ? theme.bg : theme.bg, fontWeight: 600, marginTop: 4 }}>
+                  {other?.name}{otherSubmission ? ' ✓' : ' ...'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '32px 24px', maxWidth: 480, margin: '0 auto' }}>
+      <TopBar room={room} playerId={playerId} onLeave={onLeave} onOpenSettings={onOpenSettings} theme={theme} showPhase={true} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar emoji={me.emoji} name={me.name} color={me.color} size={32} />
+          <span style={{ fontSize: 14, fontWeight: 600, color: theme.text }}>{me.name}</span>
+        </div>
+        <div style={{ fontSize: 13, color: theme.textSoft, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 14 }}>💞</span> Mode Duo
+        </div>
+      </div>
+
+      <div className="qdq-pop" style={{
+        background: theme.accentBg, borderRadius: 24, padding: 32,
+        marginBottom: 24, position: 'relative'
+      }}>
+        <div style={{
+          position: 'absolute', top: 16, left: 20, fontSize: 11, fontWeight: 700,
+          letterSpacing: '0.15em', textTransform: 'uppercase', color: '#1a1a1a', opacity: 0.5
+        }}>
+          ✦ La question
+        </div>
+        <p className="qdq-display" style={{
+          fontSize: 26, fontWeight: 700, color: '#1a1a1a',
+          lineHeight: 1.15, marginTop: 24, marginBottom: 0
+        }}>
+          {room.question}
+        </p>
+      </div>
+
+      <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        1. Ta réponse 🔒
+      </div>
+      <textarea value={myAnswer} onChange={(e) => setMyAnswer(e.target.value)}
+        placeholder="Ta vraie réponse à toi..." maxLength={300} rows={3}
+        style={{ width: '100%', padding: '16px 18px', fontSize: 16,
+          border: `1.5px solid ${theme.border}`, borderRadius: 14, background: theme.card,
+          color: theme.text, resize: 'none', marginBottom: 16 }}/>
+
+      <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 6 }}>
+        2. Ce que tu penses que <span style={{ color: other?.color }}>{other?.name}</span> a répondu 💭
+      </div>
+      <textarea value={myGuess} onChange={(e) => setMyGuess(e.target.value)}
+        placeholder={`À ton avis, qu'est-ce que ${other?.name} a répondu ?`} maxLength={300} rows={3}
+        style={{ width: '100%', padding: '16px 18px', fontSize: 16,
+          border: `1.5px solid ${theme.border}`, borderRadius: 14, background: theme.card,
+          color: theme.text, resize: 'none', marginBottom: 16 }}/>
+
+      <Button variant="primary" theme={theme} onClick={handleSubmit} disabled={!myAnswer.trim() || !myGuess.trim()}>
+        <Send size={16}/> Envoyer
+      </Button>
+
+      <p style={{ textAlign: 'center', fontSize: 12, color: theme.textMuted, marginTop: 16, lineHeight: 1.5 }}>
+        🔒 Les réponses seront comparées une fois que vous aurez tous les deux envoyé.
       </p>
     </div>
   );
@@ -1818,6 +2069,102 @@ const ResultsScreen = ({ room, playerId, onNext, onLeave, onEndGame, onOpenSetti
     );
   }
 
+  // Rendu spécial mode DUO
+  if (mode === 'duo') {
+    const [p1, p2] = room.players;
+    const a1 = room.answers?.[p1?.id];
+    const a2 = room.answers?.[p2?.id];
+    return (
+      <div style={{ padding: '32px 24px 40px', maxWidth: 480, margin: '0 auto' }}>
+        <TopBar room={room} playerId={playerId} onLeave={onLeave} onOpenSettings={onOpenSettings} theme={theme} showPhase={true} />
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ fontSize: 11, color: theme.accent, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 8 }}>
+            💞 Mode Duo · Révélations
+          </div>
+          <h2 className="qdq-display" style={{ fontSize: 32, fontWeight: 700, color: theme.text, margin: 0 }}>
+            Comparaison
+          </h2>
+        </div>
+
+        <div style={{ background: theme.accentBg, borderRadius: 16, padding: 16, marginBottom: 20 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#1a1a1a', opacity: 0.6, marginBottom: 4 }}>
+            La question
+          </div>
+          <p className="qdq-display" style={{ fontSize: 18, fontWeight: 700, color: '#1a1a1a', margin: 0, lineHeight: 1.3 }}>
+            {room.question}
+          </p>
+        </div>
+
+        {/* Réponses réelles */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: theme.text, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            🔐 Vraies réponses
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[p1, p2].map(p => {
+              const a = room.answers?.[p?.id];
+              return (
+                <div key={p?.id} className="qdq-pop" style={{
+                  background: theme.card, border: `2px solid ${p?.color}`,
+                  borderRadius: 16, padding: 16
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                    <Avatar emoji={p?.emoji} name={p?.name} color={p?.color} size={32} />
+                    <div className="qdq-display" style={{ fontSize: 16, fontWeight: 700, color: theme.text }}>
+                      {p?.name}
+                      {p?.id === playerId && <span style={{ color: theme.textSoft, fontWeight: 400, fontSize: 13 }}> (toi)</span>}
+                    </div>
+                  </div>
+                  <p className="qdq-italic" style={{
+                    fontSize: 16, color: theme.text, margin: 0, lineHeight: 1.4,
+                    paddingLeft: 42
+                  }}>
+                    « {a?.real} »
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Devinettes */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: theme.text, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            💭 Ce que chacun pensait que l'autre dirait
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[p1, p2].map(p => {
+              const a = room.answers?.[p?.id];
+              const other = p?.id === p1?.id ? p2 : p1;
+              return (
+                <div key={p?.id} style={{
+                  background: theme.card, border: `1.5px dashed ${theme.border}`,
+                  borderRadius: 16, padding: 16
+                }}>
+                  <div style={{ fontSize: 12, color: theme.textSoft, marginBottom: 8 }}>
+                    <strong style={{ color: p?.color }}>{p?.name}</strong> pensait que <strong style={{ color: other?.color }}>{other?.name}</strong> dirait :
+                  </div>
+                  <p className="qdq-italic" style={{
+                    fontSize: 16, color: theme.text, margin: 0, lineHeight: 1.4
+                  }}>
+                    « {a?.bluff} »
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <EndButtons isHost={isHost} isLastRound={isLastRound}
+          onNext={() => onNext(totalScores)}
+          onEndGame={() => onEndGame(totalScores)}
+          onLeave={onLeave}
+          hostName={room.players.find(p => p.id === room.hostId)?.name}
+          theme={theme} />
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '32px 24px 40px', maxWidth: 480, margin: '0 auto' }}>
       <TopBar room={room} playerId={playerId} onLeave={onLeave} onOpenSettings={onOpenSettings} theme={theme} showPhase={true} />
@@ -2306,6 +2653,7 @@ export default function App() {
       const mode = latest.settings?.questionMode;
       if (mode === 'bluff') latest.phase = 'guessing_bluff_p1';
       else if (mode === 'mostLikely') latest.phase = 'results';
+      else if (mode === 'duo') latest.phase = 'results';
       else latest.phase = 'guessing';
     }
     await storage.setRoom(roomCode, latest);
@@ -2316,7 +2664,12 @@ export default function App() {
     if (!latest) return;
     latest.bluffGuesses = { ...(latest.bluffGuesses || {}), [playerId]: markedAnswerIds };
     if (Object.keys(latest.bluffGuesses).length === latest.players.length) {
-      latest.phase = 'guessing_bluff_p2';
+      // À 2 joueurs : on saute la phase 2 (pas besoin d'attribuer, il n'y a qu'un autre auteur)
+      if (latest.players.length === 2) {
+        latest.phase = 'results';
+      } else {
+        latest.phase = 'guessing_bluff_p2';
+      }
     }
     await storage.setRoom(roomCode, latest);
   };
@@ -2408,6 +2761,7 @@ export default function App() {
       <div style={{ position: 'relative', zIndex: 1 }}>
         {!roomCode || !room ? (
           <HomeScreen onCreate={handleCreate} onJoin={handleJoin} theme={theme}
+            themeName={themeName} setThemeName={setThemeName}
             onOpenSettings={() => setShowSettings(true)} />
         ) : room.phase === 'lobby' ? (
           <LobbyScreen room={room} playerId={playerId} onStart={handleStart}
