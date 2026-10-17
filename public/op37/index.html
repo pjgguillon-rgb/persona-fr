@@ -521,13 +521,16 @@ function flashCard(){
   return '<article class="'+cls+'" style="border-color:var(--gold)"><div class="top"><span class="code" style="color:var(--gold)">FLASH</span><span class="tag" style="color:var(--gold)">Bonus</span><span class="pts">'+(left?left+' place'+(left>1?'s':'')+' à 3 pts':'1 pt')+'</span></div><p class="txt">'+flashText(ui.me)+'</p><p class="how">Les 3 premiers validés gagnent 3 points, les suivants 1 point. Ta cible confirme sur son téléphone.</p>'+body+stamp+'</article>';
 }
 function missionsHtml(){
-  var h='<section class="phase"><div class="phase-h"><h2>Bonus</h2><span>22h00</span></div>'+flashCard()+'</section>',open2=phase2Open();
+  var bonus='<section class="phase"><div class="phase-h"><h2>Bonus</h2><span>22h00</span></div>'+flashCard()+'</section>',open2=phase2Open(),h='';
+  if(ls("op37_intro_ok")!=="1")h+='<section class="alert"><span class="eyebrow">Comment ça marche</span><p style="font-size:15px">🎯 <b>Mission discrète</b> réussie : touche « Mission réussie », ta cible confirme sur son téléphone.</p><p style="font-size:15px">📸 <b>Photo</b> : envoie-la directement ici.</p><p style="font-size:15px">🧠 <b>Quiz</b> : écris ta réponse, Pierre corrige demain.</p><div class="row"><button class="btn primary small" data-a="intro-ok">Compris</button></div></section>';
+  if(flashOn())h+=bonus;
   [1,2].forEach(function(ph){
     h+='<section class="phase"><div class="phase-h"><h2>'+(ph===1?'À l\'apéro':'Au resto')+'</h2><span>'+(ph===1?'chez Pierre, dès 19h':'Brasserie de l\'Affiche')+'</span></div>';
     if(ph===2&&!open2)h+='<div class="sealed"><b>4 missions scellées</b><span>Ouverture à 20h40, '+untilText()+'</span></div>';
     else BY[ui.me].missions.forEach(function(m,i){if(m.ph===ph)h+=missionCard(m,i);});
     h+='</section>';
   });
+  if(!flashOn())h+=bonus;
   h+='<div class="note"><b>Comment ça marche ?</b> Mission discrète réussie : touche « Mission réussie », ta cible confirme sur son téléphone. Photo : envoie-la ici. Quiz : écris ta réponse, Pierre corrige demain.</div>';
   return h;
 }
@@ -713,6 +716,7 @@ app.addEventListener("click",function(e){
     case "claim":claim(i);return;
     case "claim-yes":answerClaim(id,i,true);return;
     case "unclaim":unclaim(k);return;
+    case "intro-ok":ls("op37_intro_ok","1");break;
     case "claim-flash":claimFlash();return;
     case "flash-yes":answerFlash(id,true);return;
     case "flash-no":answerFlash(id,false);return;
