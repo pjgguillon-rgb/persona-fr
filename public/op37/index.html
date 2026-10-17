@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Opération 37</title>
+<meta name="theme-color" content="#15132b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Big+Shoulders+Stencil+Display:wght@700;900&display=swap">
+<style>
+/* Dossier de mission sur fond de nuit : en-tete au pochoir, cartes de mission empilees, tampons de validation. Un seul theme sombre, pense pour jouer en soiree. */
+:root{
+  --night:#15132b;--panel:#1f1c3d;--panel-2:#2a2652;--line:#3a3568;
+  --ink:#f2efe6;--muted:#aaa5cc;--gold:#f3c34f;--gold-ink:#231b05;
+  --disc:#b9a2ff;--photo:#ff9f6e;--quiz:#62d6c8;--ok:#73e094;--burn:#ff6f6f;
+  --display:"Big Shoulders Stencil Display","Impact","Arial Narrow",sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:14px;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--ink)}
+body{font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top,0px)}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding-block:20px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+img{max-width:100%}
+
+.mast{display:flex;flex-direction:column;gap:6px;padding-top:6px}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mast h1{font-family:var(--display);font-weight:900;font-size:clamp(52px,16vw,84px);line-height:.86;letter-spacing:.01em;text-transform:uppercase;color:var(--gold)}
+.mast h1 span{color:var(--ink)}
+.mast .sub{color:var(--muted);font-size:15px}
+.prize{display:flex;gap:12px;align-items:center;border:1px dashed var(--gold);border-radius:var(--radius);padding:12px 14px}
+.prize b{color:var(--gold)}
+.prize svg{flex:none;width:34px;height:34px}
+
+.btn{border:0;border-radius:999px;padding:12px 18px;font-weight:700;background:var(--panel-2);color:var(--ink)}
+.btn.primary{background:var(--gold);color:var(--gold-ink)}
+.btn.ok{background:var(--ok);color:#0d2a16}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.danger{background:transparent;border:1px solid var(--burn);color:var(--burn)}
+.btn.small{padding:8px 14px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;font-size:14px;text-align:left}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor}
+.c-disc{color:var(--disc)}.c-photo{color:var(--photo)}.c-quiz{color:var(--quiz)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.field{width:100%;background:var(--night);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+textarea.field{min-height:72px;resize:vertical}
+
+.pick h2{font-family:var(--display);font-size:34px;text-transform:uppercase;letter-spacing:.02em}
+.pick p{color:var(--muted)}
+.names{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.names button{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 12px;text-align:left;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.names button small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
+.box h3{font-size:17px}
+.box .sub{color:var(--muted);font-size:14px}
+
+.agent{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.agent .who{min-width:0}
+.agent .who strong{display:block;font-family:var(--display);font-size:40px;line-height:1;text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
+.agent .count{text-align:right;flex:none}
+.agent .count b{font-family:var(--display);font-size:40px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.agent .count small{display:block;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:6px;background:var(--panel);padding:4px;border-radius:999px}
+.tabs button{flex:1;border:0;background:transparent;border-radius:999px;padding:10px 6px;font-weight:700;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--panel-2);color:var(--ink)}
+
+.alert{border:2px solid var(--gold);background:var(--panel-2);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.alert .eyebrow{color:var(--gold)}
+.alert p{font-size:17px}
+.alert p strong{color:var(--gold)}
+.alert .quote{font-size:15px;color:var(--muted);font-style:italic}
+
+.phase{display:flex;flex-direction:column;gap:10px}
+.phase-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.phase-h h2{font-family:var(--display);font-size:28px;text-transform:uppercase;letter-spacing:.02em}
+.phase-h span{color:var(--muted);font-size:14px}
+.mission{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.mission .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mission .code{font-family:var(--display);font-size:20px;color:var(--muted);letter-spacing:.04em}
+.mission .pts{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.mission .txt{font-size:18px;line-height:1.4}
+.mission .txt strong{color:var(--gold)}
+.mission .how{font-size:13px;color:var(--muted)}
+.mission .status{font-size:14px;color:var(--muted)}
+.mission .status b{color:var(--ink)}
+.mission.done{border-color:var(--ok)}
+.mission.burned{border-color:var(--burn)}
+.mission.done .txt,.mission.burned .txt{opacity:.7}
+.mission.has-stamp{padding-bottom:50px}
+.stamp{position:absolute;right:12px;bottom:10px;font-family:var(--display);font-weight:900;font-size:24px;text-transform:uppercase;letter-spacing:.06em;border:3px solid currentColor;border-radius:8px;padding:0 10px;transform:rotate(-7deg);opacity:.9;pointer-events:none}
+.stamp.ok{color:var(--ok)}.stamp.burn{color:var(--burn)}.stamp.wait{color:var(--gold)}
+.sealed{background:repeating-linear-gradient(135deg,var(--panel) 0 14px,var(--panel-2) 14px 28px);border:1px dashed var(--line);border-radius:var(--radius);padding:22px 16px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.sealed b{font-family:var(--display);font-size:26px;text-transform:uppercase;letter-spacing:.03em}
+.sealed span{color:var(--muted)}
+.filebtn{position:relative;overflow:hidden;display:inline-flex}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+
+.note{background:var(--panel);border-radius:var(--radius);padding:14px 16px;color:var(--muted);font-size:15px}
+.note b{color:var(--ink)}
+.banner{border-radius:var(--radius);padding:14px 16px;font-weight:700;background:var(--panel-2);border:1px solid var(--line)}
+.banner.warn{border-color:var(--burn);color:var(--burn)}
+.banner.info{border-color:var(--quiz)}
+
+.rules{display:flex;flex-direction:column;gap:12px}
+.rule{background:var(--panel);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.rule h3{font-size:17px}
+.rule p{color:var(--muted);font-size:15px}
+.scale{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.scale div{background:var(--panel);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center}
+.scale b{font-family:var(--display);font-size:34px;line-height:1}
+.scale small{color:var(--muted)}
+
+.acclist{display:flex;flex-direction:column;gap:8px}
+.acclist div{background:var(--panel);border-radius:12px;padding:10px 14px;font-size:15px;display:flex;justify-content:space-between;gap:10px}
+.acclist div span:first-child{min-width:0;overflow-wrap:anywhere}
+.acclist .r{font-weight:700;flex:none}
+.acclist .r.good{color:var(--ok)}.acclist .r.bad{color:var(--burn)}.acclist .r.wait{color:var(--gold)}
+
+.reveal{border:2px solid var(--gold);border-radius:var(--radius);padding:22px 18px;display:flex;flex-direction:column;gap:8px;text-align:center;background:radial-gradient(120% 90% at 50% 0%,var(--panel-2),var(--panel))}
+.reveal .eyebrow{color:var(--gold)}
+.reveal .winner{font-family:var(--display);font-weight:900;font-size:clamp(48px,15vw,76px);line-height:.9;text-transform:uppercase;color:var(--gold);overflow-wrap:anywhere}
+.reveal p{color:var(--muted)}
+.board{display:flex;flex-direction:column;gap:6px}
+.board .r{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--panel);border-radius:12px;padding:10px 12px}
+.board .rk{font-family:var(--display);font-size:22px;color:var(--muted);text-align:center}
+.board .nm{min-width:0;overflow-wrap:anywhere;font-weight:700}
+.board .nm small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.board .bar{height:4px;border-radius:2px;background:var(--line);margin-top:6px;overflow:hidden}
+.board .bar i{display:block;height:100%;background:var(--gold)}
+.board .pt{font-variant-numeric:tabular-nums;font-weight:700}
+.board .r.first{border:1px solid var(--gold)}
+.board .r.first .rk{color:var(--gold)}
+
+.mjbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mjbar .tag{color:var(--gold)}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.line > div{min-width:0}
+.line small{display:block;color:var(--muted);font-size:13px}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.check input{width:20px;height:20px;accent-color:var(--gold)}
+.presence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.presence button{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--night);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:left;min-width:0}
+.presence button span{min-width:0;overflow-wrap:anywhere}
+.presence button i{font-style:normal;font-size:12px;font-weight:700;color:var(--ok);flex:none}
+.presence button.abs{border-color:var(--burn)}
+.presence button.abs i{color:var(--burn)}
+.qa{display:flex;flex-direction:column;gap:8px}
+.qa .item{background:var(--night);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.qa .item p{font-size:15px}
+.qa .item p.ans{font-size:17px;color:var(--ink)}
+.qa .item small{color:var(--muted)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"].y{background:var(--ok);border-color:var(--ok);color:#0d2a16}
+.seg button[aria-pressed="true"].n{background:var(--burn);border-color:var(--burn);color:#2b0909}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.gallery figure{margin:0;background:var(--night);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.gallery img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:var(--panel-2)}
+.gallery figcaption{padding:8px 10px;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.gallery figcaption b{color:var(--ink)}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel-2);font-size:18px;font-weight:700;line-height:1}
+.stepper output{min-width:36px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--night);font-weight:700;padding:10px 16px;border-radius:999px;max-width:calc(100% - 32px);text-align:center}
+.foot{color:var(--muted);font-size:13px;text-align:center}
+.loading{color:var(--muted);text-align:center;padding:40px 0}
+@media (prefers-reduced-motion:no-preference){
+  .intro .stamp{animation:stamp .35s ease-out both}
+  @keyframes stamp{from{transform:rotate(-7deg) scale(1.6);opacity:0}to{transform:rotate(-7deg) scale(1);opacity:.9}}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="wrap"><p class="loading">Ouverture du dossier...</p></div></div>
+<script type="application/json" id="game">{"unlock":"2026-10-17T20:40:00+02:00","points":{"disc":3,"photo":2,"quiz":1},"players":[{"id":"jonathan","name":"Jonathan","full":"Jonathan Cadet","missions":[{"ph":1,"cat":"disc","t":"Fais raconter à {c} sa toute première rencontre avec Pierre.","c":"thomas"},{"ph":1,"cat":"photo","t":"Photo de {c} en plein fou rire, sans pose.","c":"melanie"},{"ph":1,"cat":"disc","t":"Fais manger à {c} un amuse-bouche que tu lui tends directement.","c":"clemence"},{"ph":1,"cat":"quiz","t":"Combien de pays Pierre a-t-il visités ? (à 3 près)"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} te prenne en photo, sans le lui demander directement.","c":"jeremie"},{"ph":2,"cat":"photo","t":"Photo de ton assiette et de celle de {c}, côte à côte.","c":"pascaline"},{"ph":2,"cat":"disc","t":"Fais trinquer {c} avec un verre d'eau.","c":"audrey-lacogne"},{"ph":2,"cat":"quiz","t":"Quelle voiture Pierre conduit-il en ce moment (marque et modèle) ?"}]},{"id":"agathe","name":"Agathe","full":"Agathe Perrin","missions":[{"ph":1,"cat":"disc","t":"Fais dire « en vrai » trois fois à {c} dans la même conversation.","c":"audrey-lacogne"},{"ph":1,"cat":"photo","t":"Photo de toi en train de servir à boire à {c}, comme un vrai sommelier.","c":"jonathan"},{"ph":1,"cat":"disc","t":"Fais dire « c'est clair » à {c}.","c":"morgane"},{"ph":1,"cat":"quiz","t":"Quels services Pierre dirige-t-il au jhm ? (il en faut au moins deux)"},{"ph":2,"cat":"disc","t":"Fais commander à {c} la même boisson que toi.","c":"margaux"},{"ph":2,"cat":"photo","t":"Photo d'une personne extérieure au groupe qui lève son verre à la santé de Pierre."},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} glisse au personnel du resto que c'est l'anniversaire de Pierre.","c":"julien"},{"ph":2,"cat":"quiz","t":"Quelle chanson fait toujours danser Pierre ?"}]},{"id":"melanie","name":"Melanie","full":"Melanie Hardy","missions":[{"ph":1,"cat":"disc","t":"Fais-toi resservir à boire par {c}.","c":"paul"},{"ph":1,"cat":"photo","t":"Photo d'au moins six invités en train de trinquer, tous les verres bien visibles."},{"ph":1,"cat":"disc","t":"Fais avouer à {c} le prénom de son premier amour.","c":"audrey-lemaire"},{"ph":1,"cat":"quiz","t":"Combien de nuits dure le voyage de Pierre au Japon en novembre ?"},{"ph":2,"cat":"disc","t":"Convaincs {c} d'échanger sa place avec toi.","c":"jonathan"},{"ph":2,"cat":"photo","t":"Photo de {c} qui fait semblant de dormir sur la table.","c":"thomas"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} te prenne en photo, sans le lui demander directement.","c":"margaux"},{"ph":2,"cat":"quiz","t":"Quel film Pierre peut-il revoir en boucle ?"}]},{"id":"leo","name":"Léo","full":"Léo Guilliey","missions":[{"ph":1,"cat":"disc","t":"Fais parler {c} de sa pire coupe de cheveux.","c":"margaux"},{"ph":1,"cat":"photo","t":"Photo de {c} tenant un objet qui ne lui appartient pas.","c":"morgane"},{"ph":1,"cat":"disc","t":"Fais avouer à {c} le prénom de son premier amour.","c":"jeremie"},{"ph":1,"cat":"quiz","t":"Quel sport Pierre pratiquait-il plus jeune ?"},{"ph":2,"cat":"disc","t":"Fais goûter ton plat à {c}.","c":"audrey-lacogne"},{"ph":2,"cat":"photo","t":"Selfie avec {c} : vous trinquez bras dessus, bras dessous.","c":"marine"},{"ph":2,"cat":"disc","t":"Fais-toi passer le sel par {c} alors que tu n'en mets pas.","c":"thomas"},{"ph":2,"cat":"quiz","t":"De quoi Pierre a-t-il secrètement peur ?"}]},{"id":"marine","name":"Marine","full":"Marine Moreau","missions":[{"ph":1,"cat":"disc","t":"Fais imiter un accent à {c}, n'importe lequel.","c":"pascaline"},{"ph":1,"cat":"photo","t":"Selfie avec {c} : vous faites tous les deux exactement la même grimace.","c":"melanie"},{"ph":1,"cat":"disc","t":"Fais trinquer {c} avec toi trois fois avant le départ au resto, sans jamais donner de raison.","c":"david"},{"ph":1,"cat":"quiz","t":"Quel était le surnom de Pierre au lycée ?"},{"ph":2,"cat":"disc","t":"Fais rire {c} aux éclats, devant au moins un témoin.","c":"leo"},{"ph":2,"cat":"photo","t":"Photo d'une personne extérieure au groupe qui lève son verre à la santé de Pierre."},{"ph":2,"cat":"disc","t":"Fais chanter à {c} au moins une ligne d'une chanson.","c":"germain"},{"ph":2,"cat":"quiz","t":"Quel a été le premier téléphone portable de Pierre ?"}]},{"id":"thomas","name":"Thomas","full":"Thomas Noel","missions":[{"ph":1,"cat":"disc","t":"Emprunte un objet perso à {c} (clés, lunettes, briquet...) et garde-le au moins 10 minutes.","c":"agathe"},{"ph":1,"cat":"photo","t":"Selfie avec {c} : vous faites tous les deux exactement la même grimace.","c":"audrey-lemaire"},{"ph":1,"cat":"disc","t":"Glisse le mot « ornithorynque » dans une conversation avec {c}, sans que ça fasse tilt.","c":"david"},{"ph":1,"cat":"quiz","t":"Combien de pays Pierre a-t-il visités ? (à 3 près)"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} t'appelle « chef » au moins une fois.","c":"germain"},{"ph":2,"cat":"photo","t":"Photo de la carte des desserts, avec le choix de {c} pointé du doigt.","c":"pascaline"},{"ph":2,"cat":"disc","t":"Convaincs {c} de prendre un dessert (ou un deuxième).","c":"marine"},{"ph":2,"cat":"quiz","t":"Quel est le plat préféré de Pierre ?"}]},{"id":"audrey-lemaire","name":"Audrey Lemaire","full":"Audrey Lemaire","missions":[{"ph":1,"cat":"disc","t":"Fais avouer à {c} le prénom de son premier amour.","c":"agathe"},{"ph":1,"cat":"photo","t":"Photo de toi et {c} en train de reproduire une pochette d'album célèbre.","c":"jonathan"},{"ph":1,"cat":"disc","t":"Emprunte un objet perso à {c} (clés, lunettes, briquet...) et garde-le au moins 10 minutes.","c":"margaux"},{"ph":1,"cat":"quiz","t":"Quel film Pierre peut-il revoir en boucle ?"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} t'appelle « chef » au moins une fois.","c":"audrey-lacogne"},{"ph":2,"cat":"photo","t":"Photo de toute la tablée prise depuis un bout de la table, tout le monde dans le cadre."},{"ph":2,"cat":"disc","t":"Fais chanter à {c} au moins une ligne d'une chanson.","c":"david"},{"ph":2,"cat":"quiz","t":"Quel métier Pierre voulait-il faire quand il était enfant ?"}]},{"id":"morgane","name":"Morgane","full":"Morgane Guillon","missions":[{"ph":1,"cat":"disc","t":"Fais-toi resservir à boire par {c}.","c":"thomas"},{"ph":1,"cat":"photo","t":"Photo de {c} tenant un objet qui ne lui appartient pas.","c":"david"},{"ph":1,"cat":"disc","t":"Fais en sorte que {c} te donne un surnom avant la fin de l'apéro.","c":"margaux"},{"ph":1,"cat":"quiz","t":"Dans quelle école de commerce Pierre a-t-il étudié ?"},{"ph":2,"cat":"disc","t":"Fais lever {c} pour porter un toast à Pierre.","c":"agathe"},{"ph":2,"cat":"photo","t":"Selfie avec {c} : vous trinquez bras dessus, bras dessous.","c":"germain"},{"ph":2,"cat":"disc","t":"Convaincs {c} d'échanger sa place avec toi.","c":"pascaline"},{"ph":2,"cat":"quiz","t":"Dans quelle ville Pierre est-il né ?"}]},{"id":"paul","name":"Paul","full":"Paul Roussel","missions":[{"ph":1,"cat":"disc","t":"Obtiens un high five de {c} sans raison apparente.","c":"thomas"},{"ph":1,"cat":"photo","t":"Selfie à trois (minimum) où tout le monde fait un cœur avec les mains."},{"ph":1,"cat":"disc","t":"Fais raconter à {c} sa toute première rencontre avec Pierre.","c":"marine"},{"ph":1,"cat":"quiz","t":"Quelle est la boisson préférée de Pierre en soirée ?"},{"ph":2,"cat":"disc","t":"Fais goûter ton plat à {c}.","c":"germain"},{"ph":2,"cat":"photo","t":"Photo de toi avec le serveur ou la serveuse, sourire obligatoire."},{"ph":2,"cat":"disc","t":"Fais commander à {c} la même boisson que toi.","c":"leo"},{"ph":2,"cat":"quiz","t":"Quel est le poste exact de Pierre au jhm ?"}]},{"id":"germain","name":"Germain","full":"Germain Chittaro","missions":[{"ph":1,"cat":"disc","t":"Fais dire « c'est clair » à {c}.","c":"julien"},{"ph":1,"cat":"photo","t":"Photo de toi en train de servir à boire à {c}, comme un vrai sommelier.","c":"audrey-lemaire"},{"ph":1,"cat":"disc","t":"Fais manger à {c} un amuse-bouche que tu lui tends directement.","c":"pascaline"},{"ph":1,"cat":"quiz","t":"Selon Pierre lui-même, quel est son pire défaut ?"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} te prenne en photo, sans le lui demander directement.","c":"clemence"},{"ph":2,"cat":"photo","t":"Photo de {c} avec un accessoire improvisé (serviette sur la tête, cuillère sur le nez...).","c":"jeremie"},{"ph":2,"cat":"disc","t":"Fais trinquer {c} avec un verre d'eau.","c":"paul"},{"ph":2,"cat":"quiz","t":"Combien de nuits dure le voyage de Pierre au Japon en novembre ?"}]},{"id":"margaux","name":"Margaux","full":"Margaux Lange","missions":[{"ph":1,"cat":"disc","t":"Fais-toi resservir à boire par {c}.","c":"leo"},{"ph":1,"cat":"photo","t":"Photo de toi et {c} en train de reproduire une pochette d'album célèbre.","c":"morgane"},{"ph":1,"cat":"disc","t":"Fais complimenter ta tenue par {c}.","c":"david"},{"ph":1,"cat":"quiz","t":"Quelle est la boisson préférée de Pierre en soirée ?"},{"ph":2,"cat":"disc","t":"Convaincs {c} d'échanger sa place avec toi.","c":"marine"},{"ph":2,"cat":"photo","t":"Photo de toi avec le serveur ou la serveuse, sourire obligatoire."},{"ph":2,"cat":"disc","t":"Fais raconter à {c} sa plus grosse honte en soirée.","c":"clemence"},{"ph":2,"cat":"quiz","t":"Où Pierre a-t-il fêté ses 30 ans ?"}]},{"id":"david","name":"David","full":"David Da Mota","missions":[{"ph":1,"cat":"disc","t":"Glisse le mot « ornithorynque » dans une conversation avec {c}, sans que ça fasse tilt.","c":"morgane"},{"ph":1,"cat":"photo","t":"Photo d'au moins six invités en train de trinquer, tous les verres bien visibles."},{"ph":1,"cat":"disc","t":"Fais trinquer {c} avec toi trois fois avant le départ au resto, sans jamais donner de raison.","c":"julien"},{"ph":1,"cat":"quiz","t":"Quel est le plus beau voyage de Pierre (avant le Japon) ?"},{"ph":2,"cat":"disc","t":"Fais raconter à {c} sa plus grosse honte en soirée.","c":"jeremie"},{"ph":2,"cat":"photo","t":"Photo de ton assiette et de celle de {c}, côte à côte.","c":"leo"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} glisse au personnel du resto que c'est l'anniversaire de Pierre.","c":"audrey-lemaire"},{"ph":2,"cat":"quiz","t":"Quelle est la date de naissance complète de Pierre ?"}]},{"id":"clemence","name":"Clemence","full":"Clemence Diot","missions":[{"ph":1,"cat":"disc","t":"Fais dire « c'est clair » à {c}.","c":"margaux"},{"ph":1,"cat":"photo","t":"Selfie avec {c} : vous faites tous les deux exactement la même grimace.","c":"julien"},{"ph":1,"cat":"disc","t":"Fais trinquer {c} avec toi trois fois avant le départ au resto, sans jamais donner de raison.","c":"germain"},{"ph":1,"cat":"quiz","t":"Selon Pierre lui-même, quel est son pire défaut ?"},{"ph":2,"cat":"disc","t":"Fais en sorte que {c} glisse au personnel du resto que c'est l'anniversaire de Pierre.","c":"thomas"},{"ph":2,"cat":"photo","t":"Photo de la carte des desserts, avec le choix de {c} pointé du doigt.","c":"melanie"},{"ph":2,"cat":"disc","t":"Fais commander à {c} la même boisson que toi.","c":"audrey-lacogne"},{"ph":2,"cat":"quiz","t":"Quelle est la série préférée de Pierre ?"}]},{"id":"julien","name":"Julien","full":"Julien Lacogne Piotelat","missions":[{"ph":1,"cat":"disc","t":"Fais en sorte que {c} te donne un surnom avant la fin de l'apéro.","c":"germain"},{"ph":1,"cat":"photo","t":"Photo des chaussures d'au moins cinq invités, disposées en étoile."},{"ph":1,"cat":"disc","t":"Emprunte un objet perso à {c} (clés, lunettes, briquet...) et garde-le au moins 10 minutes.","c":"melanie"},{"ph":1,"cat":"quiz","t":"Quel sport Pierre pratiquait-il plus jeune ?"},{"ph":2,"cat":"disc","t":"Fais chanter à {c} au moins une ligne d'une chanson.","c":"jeremie"},{"ph":2,"cat":"photo","t":"Photo de toute la tablée prise depuis un bout de la table, tout le monde dans le cadre."},{"ph":2,"cat":"disc","t":"Fais trinquer {c} avec un verre d'eau.","c":"agathe"},{"ph":2,"cat":"quiz","t":"Quel métier Pierre voulait-il faire quand il était enfant ?"}]},{"id":"jeremie","name":"Jérémie","full":"Jérémie Evrard","missions":[{"ph":1,"cat":"disc","t":"Obtiens un high five de {c} sans raison apparente.","c":"jonathan"},{"ph":1,"cat":"photo","t":"Selfie à trois (minimum) où tout le monde fait un cœur avec les mains."},{"ph":1,"cat":"disc","t":"Fais en sorte que {c} te donne un surnom avant la fin de l'apéro.","c":"audrey-lemaire"},{"ph":1,"cat":"quiz","t":"Quelle voiture Pierre conduit-il en ce moment (marque et modèle) ?"},{"ph":2,"cat":"disc","t":"Fais lever {c} pour porter un toast à Pierre.","c":"leo"},{"ph":2,"cat":"photo","t":"Photo de {c} avec un accessoire improvisé (serviette sur la tête, cuillère sur le nez...).","c":"agathe"},{"ph":2,"cat":"disc","t":"Fais raconter à {c} son pire souvenir de vacances.","c":"paul"},{"ph":2,"cat":"quiz","t":"En quelle année Pierre a-t-il eu son permis voiture ?"}]},{"id":"pascaline","name":"Pascaline","full":"Pascaline Grandjean","missions":[{"ph":1,"cat":"disc","t":"Fais parler {c} de sa pire coupe de cheveux.","c":"audrey-lacogne"},{"ph":1,"cat":"photo","t":"Photo de {c} en plein fou rire, sans pose.","c":"marine"},{"ph":1,"cat":"disc","t":"Fais imiter un accent à {c}, n'importe lequel.","c":"paul"},{"ph":1,"cat":"quiz","t":"Quel jeu de cartes Pierre ne refuse jamais ?"},{"ph":2,"cat":"disc","t":"Fais-toi passer le sel par {c} alors que tu n'en mets pas.","c":"jonathan"},{"ph":2,"cat":"photo","t":"Photo de la carte des desserts, avec le choix de {c} pointé du doigt.","c":"clemence"},{"ph":2,"cat":"disc","t":"Fais rire {c} aux éclats, devant au moins un témoin.","c":"melanie"},{"ph":2,"cat":"quiz","t":"Quelle est la série préférée de Pierre ?"}]},{"id":"audrey-lacogne","name":"Audrey Lacogne","full":"Audrey Lacogne","missions":[{"ph":1,"cat":"disc","t":"Fais complimenter ta tenue par {c}.","c":"morgane"},{"ph":1,"cat":"photo","t":"Photo des chaussures d'au moins cinq invités, disposées en étoile."},{"ph":1,"cat":"disc","t":"Fais dire « en vrai » trois fois à {c} dans la même conversation.","c":"melanie"},{"ph":1,"cat":"quiz","t":"Quel a été le premier concert de Pierre ?"},{"ph":2,"cat":"disc","t":"Convaincs {c} de prendre un dessert (ou un deuxième).","c":"clemence"},{"ph":2,"cat":"photo","t":"Photo de {c} qui fait semblant de dormir sur la table.","c":"paul"},{"ph":2,"cat":"disc","t":"Fais raconter à {c} son pire souvenir de vacances.","c":"julien"},{"ph":2,"cat":"quiz","t":"Où Pierre a-t-il fêté ses 30 ans ?"}]}]}</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+(function(){
+"use strict";
+var FIREBASE_CONFIG={apiKey:"AIzaSyDKNGLLL3Md--FWrboj2kdb2u51CVoZfLc",authDomain:"qui-a-dit-quoi.firebaseapp.com",databaseURL:"https://qui-a-dit-quoi-default-rtdb.europe-west1.firebasedatabase.app",projectId:"qui-a-dit-quoi",storageBucket:"qui-a-dit-quoi.firebasestorage.app",messagingSenderId:"906205311141",appId:"1:906205311141:web:fa2f0412241a75b1669d4c"};
+var ROOT="rooms/operation-37";
+var PIN_HASH="6c37f8f01d677c12ceeb45be3f813193f2171c32e27c92f4a943cd1fd0348390";
+
+var GAME=JSON.parse(document.getElementById("game").textContent);
+var P=GAME.players,PTS=GAME.points,UNLOCK=new Date(GAME.unlock).getTime();
+var BY={};P.forEach(function(p){BY[p.id]=p;});
+var CAT={disc:"Discrète",photo:"Photo",quiz:"Quiz Pierre"};
+var DONE_ST={ok:1,burn:1,photo:1,ans:1};
+
+var S={state:{status:"open",phase2:false,showFull:false},m:{},acc:{},req:{},absent:{},re:{},bonus:{}};
+var loaded={},PARTS=["state","m","acc","req","absent","re","bonus"];
+var ui={me:null,confirm:null,tab:"missions",mj:false,mjTab:"soiree",pinOpen:false,busy:{},quizDraft:{},accOpen:false,accTo:"",accGuess:"",confirmAbs:null,confirmReset:false,photos:null,photosLoading:false,err:null};
+var db=null,ref=null;
+var app=document.getElementById("app");
+
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){return null;}}
+function key(i){return "i"+i;}
+function mst(pid,i){var r=S.m[pid];return (r&&r[key(i)])||{};}
+function tgt(pid,i){var r=S.re[pid];return (r&&r[key(i)])||P_m(pid,i).c||null;}
+function P_m(pid,i){return BY[pid].missions[i];}
+function isOpen(){return S.state.status==="open";}
+function phase2Open(){return !!S.state.phase2||S.state.status!=="open"||Date.now()>=UNLOCK;}
+function code(m,i){return (m.ph===1?"A":"R")+((i%4)+1);}
+function nameOf(id){return BY[id]?BY[id].name:"?";}
+function mtext(pid,i,you){
+  var m=P_m(pid,i),t=esc(m.t),c=tgt(pid,i);
+  if(c)t=t.split("{c}").join("<strong>"+esc(you&&c===ui.me?"toi":nameOf(c))+"</strong>");
+  return t;
+}
+function untilText(){
+  var ms=UNLOCK-Date.now();if(ms<=0)return "maintenant";
+  var min=Math.ceil(ms/60000),h=Math.floor(min/60),r=min%60;
+  return "dans "+(h?h+" h "+(r<10?"0":"")+r:r+" min");
+}
+function toast(t){var el=document.createElement("div");el.className="toast";el.setAttribute("role","status");el.textContent=t;document.body.appendChild(el);setTimeout(function(){el.remove();},3400);}
+var pendingRender=false;
+function fieldFocused(){var ae=document.activeElement;return !!(ae&&app.contains(ae)&&/TEXTAREA|INPUT|SELECT/.test(ae.tagName)&&ae.type!=="file"&&ae.type!=="checkbox");}
+app.addEventListener("focusout",function(){setTimeout(function(){if(pendingRender&&!fieldFocused())render(true);},50);});
+function now(){return Date.now();}
+
+/* Points */
+function scores(){
+  var out={};
+  P.forEach(function(p){out[p.id]={pts:0,done:0,mpts:0,acc:0,bonus:0,pending:0};});
+  P.forEach(function(p){
+    p.missions.forEach(function(m,i){
+      var s=mst(p.id,i),o=out[p.id];
+      if(m.cat==="disc"&&s.st==="ok"){o.mpts+=PTS.disc;o.done++;}
+      if(m.cat==="disc"&&s.st==="claim")o.pending++;
+      if(m.cat==="photo"&&s.st==="photo"){o.done++;if(s.v!=="ko")o.mpts+=PTS.photo;}
+      if(m.cat==="quiz"&&s.st==="ans"){o.done++;if(s.v==="ok")o.mpts+=PTS.quiz;}
+    });
+  });
+  Object.keys(S.acc||{}).forEach(function(k){var a=S.acc[k];if(!a||!out[a.from])return;if(a.st==="right")out[a.from].acc+=1;if(a.st==="wrong")out[a.from].acc-=1;});
+  P.forEach(function(p){var o=out[p.id];o.bonus=+(S.bonus&&S.bonus[p.id])||0;o.pts=o.mpts+o.acc+o.bonus;});
+  return out;
+}
+function ranking(){
+  var sc=scores();
+  var list=P.map(function(p){return {p:p,s:sc[p.id]};}).sort(function(a,b){return b.s.pts-a.s.pts||a.p.full.localeCompare(b.p.full,"fr");});
+  var rank=0,prev=null;list.forEach(function(x,i){if(x.s.pts!==prev){rank=i+1;prev=x.s.pts;}x.rank=rank;});
+  return list;
+}
+
+/* Ecritures */
+function write(updates,okMsg){
+  return ref.update(updates).then(function(){if(okMsg)toast(okMsg);render(true);}).catch(function(e){toast("Échec de l'envoi. Vérifie ta connexion et réessaie.");render(true);console.error(e);});
+}
+function pushKey(){return ref.push().key;}
+
+function claim(i){var u={};u["m/"+ui.me+"/"+key(i)]={st:"claim",at:now()};write(u,"Envoyé à ta cible pour confirmation");}
+function answerClaim(pid,i,yes){var u={};u["m/"+pid+"/"+key(i)]=yes?{st:"ok",at:now(),by:ui.me}:{st:"denied",at:now(),by:ui.me};write(u,yes?"Mission confirmée":"Mission contestée");}
+function sendQuiz(i,text){text=(text||"").trim();if(!text){toast("Écris ta réponse d'abord");return;}var u={};u["m/"+ui.me+"/"+key(i)]={st:"ans",ans:text.slice(0,300),at:now()};delete ui.quizDraft[i];write(u,"Réponse envoyée");}
+function requestAbsent(i){var k=pushKey(),u={};u["req/"+k]={from:ui.me,idx:i,target:tgt(ui.me,i),at:now(),st:"pending"};write(u,"Demande envoyée à Pierre");}
+function eligibleAgainst(hunter,victim){
+  var out=[];BY[hunter].missions.forEach(function(m,i){if(m.cat!=="disc")return;var s=mst(hunter,i).st;if(tgt(hunter,i)===victim&&s!=="ok"&&s!=="burn")out.push(i);});return out;
+}
+function accuse(to,guess){
+  guess=(guess||"").trim();
+  if(!to){toast("Choisis la personne que tu soupçonnes");return;}
+  if(!guess){toast("Écris la mission que tu soupçonnes");return;}
+  var k=pushKey(),u={},auto=eligibleAgainst(to,ui.me).length===0;
+  u["acc/"+k]={from:ui.me,to:to,guess:guess.slice(0,200),at:now(),st:auto?"wrong":"pending"};
+  ui.accOpen=false;ui.accTo="";ui.accGuess="";
+  write(u,auto?"Raté : "+nameOf(to)+" n'a aucune mission sur toi en cours. -1 point":"Accusation envoyée à "+nameOf(to));
+}
+function answerAcc(k,idx){
+  var a=S.acc[k];if(!a)return;var u={};
+  if(idx===null){u["acc/"+k+"/st"]="wrong";u["acc/"+k+"/done"]=now();write(u,"Accusation repoussée");}
+  else{u["acc/"+k+"/st"]="right";u["acc/"+k+"/idx"]=idx;u["acc/"+k+"/done"]=now();u["m/"+a.to+"/"+key(idx)]={st:"burn",at:now(),by:a.from};write(u,"Mission grillée");}
+}
+function compress(file){
+  return new Promise(function(res,rej){
+    var url=URL.createObjectURL(file),img=new Image();
+    img.onload=function(){
+      var max=1400,w=img.naturalWidth,h=img.naturalHeight,s=Math.min(1,max/Math.max(w,h));
+      w=Math.round(w*s);h=Math.round(h*s);
+      var c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.75));
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);rej(new Error("image"));};
+    img.src=url;
+  });
+}
+function sendPhoto(i,file){
+  if(!file)return;ui.busy["p"+i]=true;render(true);
+  compress(file).then(function(data){
+    var u={};u["photos/"+ui.me+"_"+key(i)]={data:data,at:now(),by:ui.me,idx:i};u["m/"+ui.me+"/"+key(i)]={st:"photo",at:now()};
+    return ref.update(u).then(function(){toast("Photo envoyée");});
+  }).catch(function(){toast("La photo n'est pas partie. Réessaie, si possible avec du réseau.");}).then(function(){delete ui.busy["p"+i];render(true);});
+}
+
+/* MJ */
+function markAbsent(A){
+  var u={};u["absent/"+A]=true;
+  var load={};P.forEach(function(p){load[p.id]=0;});
+  P.forEach(function(p){p.missions.forEach(function(m,i){var t=tgt(p.id,i);if(m.c&&t&&load[t]!=null&&!DONE_ST[mst(p.id,i).st])load[t]++;});});
+  var newRe={};
+  P.forEach(function(p){
+    if(p.id===A)return;
+    p.missions.forEach(function(m,i){
+      if(!m.c)return;var s=mst(p.id,i).st;
+      if(tgt(p.id,i)!==A||DONE_ST[s]||s==="claim")return;
+      var used={};p.missions.forEach(function(mm,j){var t=(newRe[p.id+"|"+j])||tgt(p.id,j);if(mm.c&&t)used[t]=1;});
+      var c=P.filter(function(q){return q.id!==p.id&&q.id!==A&&!(S.absent&&S.absent[q.id])&&!used[q.id];});
+      if(!c.length)c=P.filter(function(q){return q.id!==p.id&&q.id!==A&&!(S.absent&&S.absent[q.id]);});
+      c.sort(function(a,b){return load[a.id]-load[b.id]||Math.random()-.5;});
+      var n=c[0];if(!n)return;
+      load[n.id]++;newRe[p.id+"|"+i]=n.id;
+      u["re/"+p.id+"/"+key(i)]=n.id;
+      if(s==="denied")u["m/"+p.id+"/"+key(i)]=null;
+    });
+  });
+  Object.keys(S.req||{}).forEach(function(k){var r=S.req[k];if(r&&r.st==="pending"&&r.target===A){u["req/"+k+"/st"]="ok";}});
+  return write(u,nameOf(A)+" absent(e) : ses missions sont réattribuées");
+}
+
+/* Rendu */
+function render(force){
+  if(!force&&fieldFocused()){pendingRender=true;return;}
+  pendingRender=false;
+  var y=window.scrollY;
+  if(ui.err){app.innerHTML='<div class="wrap">'+mast()+'<div class="banner warn">'+esc(ui.err)+'</div></div>';return;}
+  if(!PARTS.every(function(p){return loaded[p];})){return;}
+  app.innerHTML=ui.mj?renderMJ():renderPlayer();
+  window.scrollTo(0,y);
+}
+function mast(){
+  return '<header class="mast"><span class="eyebrow">Anniversaire de Pierre · samedi 17 octobre</span><h1>Opération <span>37</span></h1><p class="sub">Huit missions secrètes chacun, de l\'apéro au dessert.</p></header>';
+}
+function prize(){
+  return '<div class="prize"><svg viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="none" stroke="#f3c34f" stroke-width="2"/><circle cx="17" cy="17" r="9" fill="none" stroke="#f3c34f" stroke-width="2" stroke-dasharray="3 3"/><path d="M11 8v18M23 8v6a2 2 0 0 1-2 2h0v10" stroke="#f3c34f" stroke-width="2" fill="none" stroke-linecap="round"/></svg><p>À gagner : <b>un dîner en tête-à-tête avec Pierre</b>, offert par lui.</p></div>';
+}
+function revealBlock(){
+  if(S.state.status!=="revealed")return "";
+  var list=ranking(),top=list.filter(function(x){return x.rank===1;});
+  var h='<section class="reveal" aria-live="polite"><span class="eyebrow">Le grand gagnant de l\'opération 37</span><div class="winner">'+top.map(function(x){return esc(x.p.name);}).join(" &amp; ")+'</div><p>'+top[0].s.pts+' points. Rendez-vous pour le dîner en tête-à-tête avec Pierre.</p></section>';
+  if(S.state.showFull)h+=boardHtml(list,false);
+  return h;
+}
+function boardHtml(list,detail){
+  var max=Math.max(1,list[0].s.pts);
+  return '<section class="board">'+list.map(function(x){
+    var w=Math.max(0,Math.round(x.s.pts/max*100)),d='';
+    if(detail){var e=[x.s.done+'/8 faites'];if(x.s.pending)e.push(x.s.pending+' en attente');if(x.s.acc)e.push('démasquage '+(x.s.acc>0?'+':'')+x.s.acc);if(x.s.bonus)e.push('bonus '+(x.s.bonus>0?'+':'')+x.s.bonus);if(S.absent&&S.absent[x.p.id])e.push('absent(e)');d='<small>'+e.join(' · ')+'</small>';}
+    return '<div class="r'+(x.rank===1&&x.s.pts>0?' first':'')+'"><span class="rk">'+x.rank+'</span><div class="nm">'+esc(x.p.full)+d+'<div class="bar"><i style="width:'+w+'%"></i></div></div><span class="pt">'+x.s.pts+' pts</span></div>';
+  }).join("")+'</section>';
+}
+
+function renderPlayer(){
+  var h='<div class="wrap">'+mast()+revealBlock();
+  if(S.state.status==="closed")h+='<div class="banner info">Les missions sont terminées. Résultat demain : Pierre vous enverra un message quand le grand gagnant sera dévoilé ici.</div>';
+  if(!ui.me){
+    if(ui.confirm){
+      var c=BY[ui.confirm];
+      h+='<section class="box"><p>Tu es bien <b>'+esc(c.full)+'</b> ? Tes missions sont secrètes : ne les montre à personne.</p><div class="row"><button class="btn primary" data-a="me-ok">Oui, c\'est moi</button><button class="btn ghost" data-a="me-cancel">Non</button></div></section>';
+    }else{
+      h+='<section class="pick"><h2>Qui es-tu ?</h2><p>Choisis ton nom pour ouvrir ton dossier.</p></section><div class="names">'+
+        P.slice().sort(function(a,b){return a.full.localeCompare(b.full,"fr");}).map(function(p){var parts=p.full.split(" "),f=parts.shift();return '<button data-a="pick" data-id="'+p.id+'">'+esc(f)+'<small>'+esc(parts.join(" "))+'</small></button>';}).join("")+'</div>'+prize();
+    }
+    return h+'</div>';
+  }
+  var me=BY[ui.me],sc=scores()[me.id];
+  h+='<section class="agent"><div class="who"><span class="eyebrow">Agent</span><strong>'+esc(me.name)+'</strong><button class="link" data-a="me-change">Ce n\'est pas toi ?</button></div><div class="count"><b>'+sc.done+'/8</b><small>missions faites</small></div></section>';
+  h+=alertsHtml();
+  h+='<div class="tabs" role="tablist"><button role="tab" aria-selected="'+(ui.tab==="missions")+'" data-a="tab" data-t="missions">Missions</button><button role="tab" aria-selected="'+(ui.tab==="demasquer")+'" data-a="tab" data-t="demasquer">Démasquer</button><button role="tab" aria-selected="'+(ui.tab==="regles")+'" data-a="tab" data-t="regles">Règles</button></div>';
+  if(ui.tab==="regles")h+=rulesHtml();
+  else if(ui.tab==="demasquer")h+=accuseHtml();
+  else h+=missionsHtml();
+  h+=prize()+'<p class="foot">Le classement reste secret jusqu\'à demain.</p>';
+  return h+'</div>';
+}
+function alertsHtml(){
+  var h='';
+  P.forEach(function(p){if(p.id===ui.me)return;p.missions.forEach(function(m,i){
+    if(m.cat==="disc"&&mst(p.id,i).st==="claim"&&tgt(p.id,i)===ui.me){
+      h+='<section class="alert"><span class="eyebrow">À confirmer</span><p><strong>'+esc(p.name)+'</strong> dit avoir réussi sa mission sur toi :</p><p class="quote">'+mtext(p.id,i,true)+'</p><div class="row"><button class="btn ok" data-a="claim-yes" data-id="'+p.id+'" data-i="'+i+'">Oui, c\'est vrai</button><button class="btn ghost" data-a="claim-no" data-id="'+p.id+'" data-i="'+i+'">Non, c\'est faux</button></div></section>';
+    }
+  });});
+  Object.keys(S.acc||{}).forEach(function(k){
+    var a=S.acc[k];if(!a||a.to!==ui.me||a.st!=="pending")return;
+    var el=eligibleAgainst(ui.me,a.from);
+    h+='<section class="alert"><span class="eyebrow">Démasqué ?</span><p><strong>'+esc(nameOf(a.from))+'</strong> pense avoir deviné ta mission sur lui ou elle :</p><p class="quote">« '+esc(a.guess)+' »</p>'+
+      (el.length?'<p class="sub" style="font-size:14px;color:var(--muted)">Si c\'est bien l\'une de ces missions, sois honnête et touche-la :</p>'+el.map(function(i){return '<button class="btn small" style="text-align:left" data-a="acc-yes" data-k="'+k+'" data-i="'+i+'">'+code(P_m(ui.me,i),i)+' · '+mtext(ui.me,i)+'</button>';}).join(""):'')+
+      '<div class="row"><button class="btn ghost" data-a="acc-no" data-k="'+k+'">Non, raté</button></div></section>';
+  });
+  return h;
+}
+function missionsHtml(){
+  var h='',open2=phase2Open();
+  [1,2].forEach(function(ph){
+    h+='<section class="phase"><div class="phase-h"><h2>'+(ph===1?'À l\'apéro':'Au resto')+'</h2><span>'+(ph===1?'chez Pierre, dès 19h':'Brasserie de l\'Affiche')+'</span></div>';
+    if(ph===2&&!open2)h+='<div class="sealed"><b>4 missions scellées</b><span>Ouverture à 20h40, '+untilText()+'</span></div>';
+    else BY[ui.me].missions.forEach(function(m,i){if(m.ph===ph)h+=missionCard(m,i);});
+    h+='</section>';
+  });
+  h+='<div class="note"><b>Comment ça marche ?</b> Mission discrète réussie : touche « Mission réussie », ta cible confirme sur son téléphone. Photo : envoie-la ici. Quiz : écris ta réponse, Pierre corrige demain.</div>';
+  return h;
+}
+function reqPending(i){var f=false;Object.keys(S.req||{}).forEach(function(k){var r=S.req[k];if(r&&r.from===ui.me&&r.idx===i&&r.st==="pending"&&r.target===tgt(ui.me,i))f=true;});return f;}
+function reqRefused(i){var f=false;Object.keys(S.req||{}).forEach(function(k){var r=S.req[k];if(r&&r.from===ui.me&&r.idx===i&&r.st==="ko"&&r.target===tgt(ui.me,i))f=true;});return f;}
+function missionCard(m,i){
+  var s=mst(ui.me,i),st=s.st||"",t=tgt(ui.me,i),reassigned=S.re[ui.me]&&S.re[ui.me][key(i)];
+  var cls="mission",stamp="",body="",open=isOpen();
+  var absentLink=function(){
+    if(!t||!open)return "";
+    if(reqPending(i))return '<p class="status">Demande envoyée à Pierre : il vérifie que <b>'+esc(nameOf(t))+'</b> n\'est pas là.</p>';
+    return (reqRefused(i)?'<p class="status">Pierre a vu <b>'+esc(nameOf(t))+'</b> à la soirée : mission maintenue.</p>':'')+'<button class="link" data-a="absent" data-i="'+i+'">'+esc(nameOf(t))+' n\'est pas là ?</button>';
+  };
+  if(m.cat==="disc"){
+    if(st==="ok"){cls+=" done has-stamp";stamp='<span class="stamp ok">Validée</span>';body='<p class="status">Confirmée par <b>'+esc(nameOf(t))+'</b>.</p>';}
+    else if(st==="burn"){cls+=" burned has-stamp";stamp='<span class="stamp burn">Grillée</span>';body='<p class="status"><b>'+esc(nameOf(s.by||t))+'</b> t\'a démasqué.</p>';}
+    else if(st==="claim"){cls+=" has-stamp";stamp='<span class="stamp wait">En attente</span>';body='<p class="status">En attente de la confirmation de <b>'+esc(nameOf(t))+'</b>.</p>';}
+    else{
+      if(st==="denied")body+='<p class="status"><b>'+esc(nameOf(t))+'</b> a contesté. Tu peux retenter.</p>';
+      body+=open?'<div class="row"><button class="btn primary small" data-a="claim" data-i="'+i+'">Mission réussie</button></div>'+absentLink():'';
+    }
+  }else if(m.cat==="photo"){
+    if(st==="photo"){cls+=" done has-stamp";stamp='<span class="stamp ok">Envoyée</span>';body='<p class="status">Photo reçue'+(s.v==="ko"?', mais refusée par Pierre':'')+'.</p>'+(open?'<label class="filebtn link">Remplacer la photo<input type="file" accept="image/*" data-a="photo" data-i="'+i+'"></label>':'');}
+    else if(ui.busy["p"+i]){body='<p class="status"><b>Envoi en cours...</b> garde la page ouverte.</p>';}
+    else body=open?'<div class="row"><label class="btn primary small filebtn">Envoyer la photo<input type="file" accept="image/*" data-a="photo" data-i="'+i+'"></label></div>'+absentLink():'';
+  }else{
+    if(st==="ans"){cls+=" done has-stamp";stamp='<span class="stamp ok">Répondu</span>';body='<p class="status">Ta réponse : <b>'+esc(s.ans)+'</b>. Pierre corrige demain.</p>';}
+    else body=open?'<textarea class="field" id="quiz-'+i+'" data-a="quiz-input" data-i="'+i+'" placeholder="Ta réponse (une seule tentative)">'+esc(ui.quizDraft[i]||"")+'</textarea><div class="row"><button class="btn primary small" data-a="quiz" data-i="'+i+'">Envoyer ma réponse</button></div>':'';
+  }
+  return '<article class="'+cls+'"><div class="top"><span class="code">'+code(m,i)+'</span><span class="tag c-'+m.cat+'">'+CAT[m.cat]+'</span><span class="pts">'+PTS[m.cat]+' pt'+(PTS[m.cat]>1?'s':'')+'</span></div><p class="txt">'+mtext(ui.me,i)+'</p>'+(reassigned&&!DONE_ST[st]?'<p class="how">Nouvelle cible : la précédente n\'est pas là.</p>':'')+body+stamp+'</article>';
+}
+function accuseHtml(){
+  var h='<section class="box"><h3>Tu te sens visé ?</h3><p class="sub">Désigne la personne et écris la mission que tu la soupçonnes de faire sur toi. Elle confirme honnêtement sur son téléphone. Juste : sa mission est grillée et tu gagnes 1 point. Faux : tu perds 1 point.</p>';
+  if(!isOpen())h+='<p class="sub">Le jeu est clos.</p>';
+  else{
+    h+='<label class="sub" for="acc-to">Qui ?</label><select class="field" id="acc-to" data-a="acc-to"><option value="">Choisir quelqu\'un</option>'+
+      P.filter(function(p){return p.id!==ui.me;}).sort(function(a,b){return a.full.localeCompare(b.full,"fr");}).map(function(p){return '<option value="'+p.id+'"'+(ui.accTo===p.id?' selected':'')+'>'+esc(p.full)+'</option>';}).join("")+'</select>'+
+      '<label class="sub" for="acc-guess">Quelle mission, selon toi ?</label><textarea class="field" id="acc-guess" data-a="acc-guess" placeholder="Ex : me faire dire une expression précise">'+esc(ui.accGuess)+'</textarea>'+
+      '<div class="row"><button class="btn primary" data-a="accuse">Démasquer</button></div>';
+  }
+  h+='</section>';
+  var mine=Object.keys(S.acc||{}).map(function(k){return S.acc[k];}).filter(function(a){return a&&a.from===ui.me;}).sort(function(a,b){return b.at-a.at;});
+  if(mine.length)h+='<section class="phase"><div class="phase-h"><h2>Tes accusations</h2></div><div class="acclist">'+mine.map(function(a){
+    var r=a.st==="right"?'<span class="r good">Juste · +1</span>':a.st==="wrong"?'<span class="r bad">Raté · -1</span>':'<span class="r wait">En attente</span>';
+    return '<div><span><b>'+esc(nameOf(a.to))+'</b> · '+esc(a.guess)+'</span>'+r+'</div>';
+  }).join("")+'</div></section>';
+  return h;
+}
+function rulesHtml(){
+  return '<section class="rules"><div class="scale"><div><span class="tag c-disc">Discrète</span><b>3</b><small>points</small></div><div><span class="tag c-photo">Photo</span><b>2</b><small>points</small></div><div><span class="tag c-quiz">Quiz</span><b>1</b><small>point</small></div></div>'+
+    '<div class="rule"><h3>Huit missions, deux temps</h3><p>Quatre à l\'apéro, quatre au resto. Celles du resto s\'ouvrent à 20h40. Fais-les dans l\'ordre que tu veux.</p></div>'+
+    '<div class="rule"><h3>Secret absolu</h3><p>Ne montre tes missions à personne. Ta cible ne doit pas comprendre ce que tu manigances.</p></div>'+
+    '<div class="rule"><h3>Mission discrète</h3><p>Réussie ? Touche « Mission réussie » : ta cible reçoit la mission sur son téléphone et confirme si c\'est vrai.</p></div>'+
+    '<div class="rule"><h3>Photo et quiz</h3><p>Envoie ta photo directement ici. Pour le quiz, écris ta réponse : une seule tentative, Pierre corrige demain.</p></div>'+
+    '<div class="rule"><h3>Démasque tes chasseurs</h3><p>Onglet « Démasquer » : désigne qui te vise et avec quelle mission. La personne confirme. Juste : +1 pour toi et sa mission est grillée. Faux : -1.</p></div>'+
+    '<div class="rule"><h3>Ta cible n\'est pas là ?</h3><p>Touche « n\'est pas là ? » sous la mission. Pierre vérifie et ta mission passe sur quelqu\'un de présent.</p></div>'+
+    '<div class="rule"><h3>Résultat demain</h3><p>Le classement reste secret. Pierre vous enverra un message quand le grand gagnant sera dévoilé ici même.</p></div></section>';
+}
+
+function renderMJ(){
+  var h='<div class="wrap"><div class="mjbar"><span class="tag">Maître du jeu</span><button class="btn ghost small" data-a="mj-exit">Vue joueur</button></div>';
+  h+='<div class="tabs" role="tablist"><button role="tab" aria-selected="'+(ui.mjTab==="soiree")+'" data-a="mjtab" data-t="soiree">Soirée</button><button role="tab" aria-selected="'+(ui.mjTab==="correction")+'" data-a="mjtab" data-t="correction">Correction</button><button role="tab" aria-selected="'+(ui.mjTab==="classement")+'" data-a="mjtab" data-t="classement">Classement</button></div>';
+  if(ui.mjTab==="correction")h+=mjCorrection();
+  else if(ui.mjTab==="classement")h+=mjClassement();
+  else h+=mjSoiree();
+  return h+'</div>';
+}
+function mjSoiree(){
+  var h='',reqs=Object.keys(S.req||{}).map(function(k){return {k:k,r:S.req[k]};}).filter(function(x){return x.r&&x.r.st==="pending";});
+  h+='<section class="box"><h3>Demandes d\'absence'+(reqs.length?' ('+reqs.length+')':'')+'</h3>';
+  if(!reqs.length)h+='<p class="sub">Aucune demande. Tu peux profiter de ta soirée.</p>';
+  reqs.forEach(function(x){
+    var r=x.r;
+    h+='<div class="alert"><p><strong>'+esc(nameOf(r.from))+'</strong> dit que <strong>'+esc(nameOf(r.target))+'</strong> n\'est pas là.</p><div class="row"><button class="btn ok small" data-a="req-ok" data-id="'+r.target+'">C\'est vrai, réattribuer</button><button class="btn ghost small" data-a="req-ko" data-k="'+x.k+'">Non, '+esc(nameOf(r.target))+' est là</button></div></div>';
+  });
+  h+='</section>';
+  h+='<section class="box"><h3>Présences</h3><p class="sub">Touche un nom pour le marquer absent : les missions qui le visent passent sur quelqu\'un de présent.</p><div class="presence">'+
+    P.slice().sort(function(a,b){return a.full.localeCompare(b.full,"fr");}).map(function(p){var ab=S.absent&&S.absent[p.id];return '<button class="'+(ab?'abs':'')+'" data-a="pres" data-id="'+p.id+'"><span>'+esc(p.full)+'</span><i>'+(ab?'absent':'présent')+'</i></button>';}).join("")+'</div>';
+  if(ui.confirmAbs)h+='<div class="alert"><p>Marquer <strong>'+esc(nameOf(ui.confirmAbs))+'</strong> absent(e) et réattribuer ses missions ?</p><div class="row"><button class="btn ok small" data-a="abs-yes">Oui</button><button class="btn ghost small" data-a="abs-no">Annuler</button></div></div>';
+  h+='</section>';
+  var open2=phase2Open(),st=S.state.status;
+  h+='<section class="box"><h3>Déroulé</h3>'+
+    '<div class="line"><div><b>Missions du resto</b><small>'+(open2?'Ouvertes':'Ouverture auto à 20h40, '+untilText())+'</small></div>'+(open2?'':'<button class="btn small" data-a="p2">Ouvrir maintenant</button>')+'</div>'+
+    '<div class="line"><div><b>Jeu</b><small>'+({open:'En cours',closed:'Clos, résultat pas encore dévoilé',revealed:'Gagnant dévoilé à tous'})[st]+'</small></div>'+
+    (st==="open"?'<button class="btn small" data-a="status" data-v="closed">Clore le jeu</button>':st==="closed"?'<button class="btn primary small" data-a="status" data-v="revealed">Révéler le gagnant</button>':'<button class="btn ghost small" data-a="status" data-v="closed">Masquer le résultat</button>')+'</div>'+
+    (st!=="open"?'<label class="check"><input type="checkbox" id="showfull" data-a="showfull"'+(S.state.showFull?' checked':'')+'> Montrer aussi le classement complet à tous</label><button class="link" data-a="status" data-v="open">Rouvrir le jeu</button>':'')+
+    '</section>';
+  h+='<section class="box"><h3>Avant la soirée</h3><p class="sub">Après tes tests, remets tout à zéro.</p>'+(ui.confirmReset?'<div class="row"><button class="btn danger small" data-a="reset-yes">Oui, tout effacer</button><button class="btn ghost small" data-a="reset-no">Non</button></div>':'<div class="row"><button class="btn danger small" data-a="reset">Tout remettre à zéro</button></div>')+'</section>';
+  return h;
+}
+function mjCorrection(){
+  var h='<section class="box"><h3>Quiz</h3><p class="sub">Une bonne réponse rapporte 1 point.</p><div class="qa">',n=0;
+  P.forEach(function(p){p.missions.forEach(function(m,i){
+    if(m.cat!=="quiz")return;var s=mst(p.id,i);if(s.st!=="ans")return;n++;
+    h+='<div class="item"><small>'+esc(p.full)+'</small><p>'+esc(m.t)+'</p><p class="ans">« '+esc(s.ans)+' »</p><div class="seg"><button class="y" data-a="verdict" data-id="'+p.id+'" data-i="'+i+'" data-v="ok" aria-pressed="'+(s.v==="ok")+'">Bonne</button><button class="n" data-a="verdict" data-id="'+p.id+'" data-i="'+i+'" data-v="ko" aria-pressed="'+(s.v==="ko")+'">Fausse</button></div></div>';
+  });});
+  if(!n)h+='<p class="sub">Aucune réponse pour l\'instant.</p>';
+  h+='</div></section>';
+  h+='<section class="box"><h3>Photos</h3><p class="sub">Une photo envoyée rapporte 2 points, sauf si tu la refuses.</p>';
+  if(!ui.photos)h+='<div class="row"><button class="btn primary small" data-a="load-photos"'+(ui.photosLoading?' disabled':'')+'>'+(ui.photosLoading?'Chargement...':'Afficher les photos')+'</button></div>';
+  else{
+    var keys=Object.keys(ui.photos).sort();
+    if(!keys.length)h+='<p class="sub">Aucune photo pour l\'instant.</p>';
+    else{
+      h+='<div class="row"><button class="btn small" data-a="zip">Tout télécharger (.zip)</button><button class="link" data-a="load-photos">Actualiser</button></div><div class="gallery">'+keys.map(function(k){
+        var ph=ui.photos[k],pid=ph.by,i=ph.idx,s=mst(pid,i);if(!BY[pid])return "";
+        return '<figure><a href="'+ph.data+'" download="'+pid+'-'+code(P_m(pid,i),i)+'.jpg"><img src="'+ph.data+'" alt="Photo de '+esc(BY[pid].full)+'" loading="lazy"></a><figcaption><b>'+esc(BY[pid].name)+'</b><span>'+mtext(pid,i)+'</span><div class="seg"><button class="y" data-a="pverdict" data-id="'+pid+'" data-i="'+i+'" data-v="" aria-pressed="'+(s.v!=="ko")+'">Validée</button><button class="n" data-a="pverdict" data-id="'+pid+'" data-i="'+i+'" data-v="ko" aria-pressed="'+(s.v==="ko")+'">Refusée</button></div></figcaption></figure>';
+      }).join("")+'</div>';
+    }
+  }
+  h+='</section>';
+  return h;
+}
+function mjClassement(){
+  var list=ranking(),h='';
+  var top=list.filter(function(x){return x.rank===1;});
+  if(top.length>1&&top[0].s.pts>0)h+='<div class="banner warn">Égalité en tête : '+top.map(function(x){return esc(x.p.name);}).join(", ")+'. Départage-les avec un point bonus avant de révéler.</div>';
+  h+=boardHtml(list,true);
+  h+='<section class="box"><h3>Bonus ou malus</h3><p class="sub">Pour départager ou récompenser un coup d\'éclat.</p>'+P.slice().sort(function(a,b){return a.full.localeCompare(b.full,"fr");}).map(function(p){var b=+(S.bonus&&S.bonus[p.id])||0;return '<div class="line"><span>'+esc(p.full)+'</span><div class="stepper"><button data-a="bonus" data-id="'+p.id+'" data-v="-1" aria-label="Retirer un point">−</button><output>'+(b>0?'+':'')+b+'</output><button data-a="bonus" data-id="'+p.id+'" data-v="1" aria-label="Ajouter un point">+</button></div></div>';}).join("")+'</section>';
+  return h;
+}
+function pinHtml(){
+  return '<div class="wrap">'+mast()+'<section class="box"><h3>Accès maître du jeu</h3><label class="sub" for="pin">Code</label><input class="field" id="pin" inputmode="numeric" autocomplete="off" placeholder="4 chiffres"><div class="row"><button class="btn primary" data-a="pin">Entrer</button><button class="btn ghost" data-a="pin-cancel">Retour au jeu</button></div></section></div>';
+}
+
+/* Evenements */
+function sha(t){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(t)).then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");});}
+app.addEventListener("click",function(e){
+  var b=e.target.closest("[data-a]");if(!b)return;
+  var a=b.getAttribute("data-a"),id=b.getAttribute("data-id"),v=b.getAttribute("data-v"),i=b.hasAttribute("data-i")?+b.getAttribute("data-i"):null,k=b.getAttribute("data-k");
+  if(a==="photo"||a==="showfull"||a==="quiz-input"||a==="acc-to"||a==="acc-guess")return;
+  switch(a){
+    case "pick":ui.confirm=id;break;
+    case "me-ok":ui.me=ui.confirm;ui.confirm=null;ls("op37_me",ui.me);window.scrollTo(0,0);break;
+    case "me-cancel":ui.confirm=null;break;
+    case "me-change":ui.me=null;ls("op37_me",null);break;
+    case "tab":ui.tab=b.getAttribute("data-t");break;
+    case "claim":claim(i);return;
+    case "claim-yes":answerClaim(id,i,true);return;
+    case "claim-no":answerClaim(id,i,false);return;
+    case "quiz":var ta=document.getElementById("quiz-"+i);sendQuiz(i,ta?ta.value:"");return;
+    case "absent":requestAbsent(i);return;
+    case "accuse":var s1=document.getElementById("acc-to"),s2=document.getElementById("acc-guess");accuse(s1?s1.value:"",s2?s2.value:"");return;
+    case "acc-yes":answerAcc(k,i);return;
+    case "acc-no":answerAcc(k,null);return;
+    case "pin":var pin=(document.getElementById("pin")||{}).value||"";sha("op37-"+pin.trim()).then(function(hh){if(hh===PIN_HASH){ls("op37_mj","1");ui.mj=true;ui.pinOpen=false;render(true);}else{toast("Code incorrect");}});return;
+    case "pin-cancel":ui.pinOpen=false;history.replaceState(null,"",location.pathname);break;
+    case "mj-exit":ui.mj=false;ls("op37_mj",null);history.replaceState(null,"",location.pathname);break;
+    case "mjtab":ui.mjTab=b.getAttribute("data-t");break;
+    case "req-ok":markAbsent(id);return;
+    case "req-ko":var u0={};u0["req/"+k+"/st"]="ko";write(u0,"Demande refusée");return;
+    case "pres":if(S.absent&&S.absent[id]){var u1={};u1["absent/"+id]=null;write(u1,nameOf(id)+" de nouveau présent(e)");return;}ui.confirmAbs=id;break;
+    case "abs-yes":var A=ui.confirmAbs;ui.confirmAbs=null;markAbsent(A);return;
+    case "abs-no":ui.confirmAbs=null;break;
+    case "p2":write({"state/phase2":true},"Missions du resto ouvertes");return;
+    case "status":var u2={};u2["state/status"]=v;write(u2,v==="revealed"?"Gagnant dévoilé":v==="closed"?"Jeu clos":"Jeu rouvert");return;
+    case "reset":ui.confirmReset=true;break;
+    case "reset-no":ui.confirmReset=false;break;
+    case "reset-yes":ui.confirmReset=false;ui.photos=null;write({m:null,acc:null,req:null,absent:null,re:null,bonus:null,photos:null,state:{status:"open",phase2:false,showFull:false}},"Tout est remis à zéro");return;
+    case "verdict":var u3={};u3["m/"+id+"/"+key(i)+"/v"]=mst(id,i).v===v?null:v;write(u3);return;
+    case "pverdict":var u4={};u4["m/"+id+"/"+key(i)+"/v"]=v||null;write(u4);return;
+    case "bonus":var u5={};u5["bonus/"+id]=((+(S.bonus&&S.bonus[id])||0)+(+v))||null;write(u5);return;
+    case "load-photos":ui.photosLoading=true;render(true);ref.child("photos").once("value").then(function(s){ui.photos=s.val()||{};}).catch(function(){toast("Impossible de charger les photos");}).then(function(){ui.photosLoading=false;render(true);});return;
+    case "zip":zipAll();return;
+  }
+  render(true);
+});
+app.addEventListener("change",function(e){
+  var t=e.target,a=t&&t.getAttribute("data-a");
+  if(a==="photo"){var f=t.files&&t.files[0];sendPhoto(+t.getAttribute("data-i"),f);}
+  if(a==="showfull")write({"state/showFull":t.checked});
+  if(a==="acc-to")ui.accTo=t.value;
+});
+app.addEventListener("input",function(e){
+  var t=e.target,a=t&&t.getAttribute("data-a");
+  if(a==="quiz-input")ui.quizDraft[+t.getAttribute("data-i")]=t.value;
+  if(a==="acc-guess")ui.accGuess=t.value;
+});
+function zipAll(){
+  if(!ui.photos)return;
+  var go=function(){
+    var z=new JSZip();
+    Object.keys(ui.photos).forEach(function(k){var ph=ui.photos[k];if(!BY[ph.by])return;z.file(BY[ph.by].full.replace(/\s+/g,"-")+"_"+code(P_m(ph.by,ph.idx),ph.idx)+".jpg",ph.data.split(",")[1],{base64:true});});
+    z.generateAsync({type:"blob"}).then(function(blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="operation-37-photos.zip";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},2000);});
+  };
+  if(window.JSZip)return go();
+  var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";s.onload=go;s.onerror=function(){toast("Téléchargement du zip impossible, enregistre les photos une par une.");};document.head.appendChild(s);
+}
+
+/* Demarrage */
+(function init(){
+  var saved=ls("op37_me");if(saved&&BY[saved])ui.me=saved;
+  var wantsMJ=/^#mj/.test(location.hash||"");
+  if(ls("op37_mj")==="1"&&wantsMJ)ui.mj=true;
+  else if(wantsMJ)ui.pinOpen=true;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.database();ref=db.ref(ROOT);
+  }catch(e){ui.err="Connexion au jeu impossible. Réessaie dans un instant.";render(true);return;}
+  if(ui.pinOpen){app.innerHTML=pinHtml();}
+  ref.child("code").once("value").then(function(s){
+    if(!s.exists())return ref.update({code:"OP37",phase:"operation-37",players:{pierre:"maitre du jeu"},state:{status:"open",phase2:false,showFull:false}});
+  }).catch(function(e){console.error(e);});
+  PARTS.forEach(function(part){
+    ref.child(part).on("value",function(s){
+      var v=s.val();
+      if(part==="state")S.state=Object.assign({status:"open",phase2:false,showFull:false},v||{});
+      else S[part]=v||{};
+      loaded[part]=true;
+      if(!ui.pinOpen)render();
+    },function(err){ui.err="Le jeu n'arrive pas à lire ses données ("+(err&&err.code||"erreur")+"). Préviens Pierre.";render(true);});
+  });
+  setTimeout(function(){if(!PARTS.every(function(p){return loaded[p];})&&!ui.err){ui.err="Connexion lente... vérifie ton réseau, la page se mettra à jour toute seule.";app.innerHTML='<div class="wrap">'+mast()+'<div class="banner info">'+ui.err+'</div></div>';ui.err=null;}},8000);
+  app.classList.add("intro");setTimeout(function(){app.classList.remove("intro");},1500);
+  var lastOpen=null;
+  setInterval(function(){var o=phase2Open();if(o!==lastOpen||!o){lastOpen=o;if(!ui.pinOpen)render();}},30000);
+})();
+})();
+</script>
+</body>
+</html>
