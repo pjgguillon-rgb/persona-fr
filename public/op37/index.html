@@ -464,7 +464,7 @@ function boardHtml(list,detail){
 
 function renderPlayer(){
   var h='<div class="wrap">'+mast()+revealBlock();
-  if(S.state.status==="closed"||(S.state.status==="open"&&Date.now()>=CLOSE))h+='<div class="banner info">Les missions sont terminées. Résultat demain : Pierre vous enverra un message quand le grand gagnant sera dévoilé ici.</div>';
+  if(S.state.status==="closed"||(S.state.status==="open"&&Date.now()>=CLOSE))h+='<div class="banner info">Les missions sont terminées. Le grand gagnant sera dévoilé ici très bientôt : guettez le message de Pierre.</div>';
   if(!ui.me&&!started()){
     h+='<section class="box" style="text-align:center;gap:6px"><span class="eyebrow">Ouverture des dossiers</span><div style="font-family:var(--display);font-weight:900;font-size:64px;line-height:1;color:var(--gold)">19h00</div><p class="sub">'+untilStart()+'</p></section>'+
       '<section class="rules"><div class="rule"><h3>Huit missions secrètes</h3><p>De l\'apéro au dessert, chacun reçoit des missions à accomplir sur les autres invités, des photos à prendre et un quiz sur Pierre.</p></div>'+
@@ -493,7 +493,7 @@ function renderPlayer(){
   else if(ui.tab==="jokers")h+=jokersHtml();
   else if(ui.tab==="demasquer")h+=accuseHtml();
   else h+=missionsHtml();
-  h+=prize()+'<p class="foot">Le classement reste secret jusqu\'à demain.</p>';
+  h+=prize()+'<p class="foot">Le classement reste secret jusqu\'à la révélation.</p>';
   return h+'</div>';
 }
 function alertsHtml(){
@@ -522,7 +522,7 @@ function flashCard(){
 }
 function missionsHtml(){
   var bonus='<section class="phase"><div class="phase-h"><h2>Bonus</h2><span>22h00</span></div>'+flashCard()+'</section>',open2=phase2Open(),h='';
-  if(ls("op37_intro_ok")!=="1")h+='<section class="alert"><span class="eyebrow">Comment ça marche</span><p style="font-size:15px">🎯 <b>Mission discrète</b> réussie : touche « Mission réussie », ta cible confirme sur son téléphone.</p><p style="font-size:15px">📸 <b>Photo</b> : envoie-la directement ici.</p><p style="font-size:15px">🧠 <b>Quiz</b> : écris ta réponse, Pierre corrige demain.</p><div class="row"><button class="btn primary small" data-a="intro-ok">Compris</button></div></section>';
+  if(ls("op37_intro_ok")!=="1")h+='<section class="alert"><span class="eyebrow">Comment ça marche</span><p style="font-size:15px">🎯 <b>Mission discrète</b> réussie : touche « Mission réussie », ta cible confirme sur son téléphone.</p><p style="font-size:15px">📸 <b>Photo</b> : envoie-la directement ici.</p><p style="font-size:15px">🧠 <b>Quiz</b> : écris ta réponse, Pierre corrige après la soirée.</p><div class="row"><button class="btn primary small" data-a="intro-ok">Compris</button></div></section>';
   if(flashOn())h+=bonus;
   [1,2].forEach(function(ph){
     h+='<section class="phase"><div class="phase-h"><h2>'+(ph===1?'À l\'apéro':'Au resto')+'</h2><span>'+(ph===1?'chez Pierre, dès 19h':'Brasserie de l\'Affiche')+'</span></div>';
@@ -531,7 +531,7 @@ function missionsHtml(){
     h+='</section>';
   });
   if(!flashOn())h+=bonus;
-  h+='<div class="note"><b>Comment ça marche ?</b> Mission discrète réussie : touche « Mission réussie », ta cible confirme sur son téléphone. Photo : envoie-la ici. Quiz : écris ta réponse, Pierre corrige demain.</div>';
+  h+='<div class="note"><b>Comment ça marche ?</b> Mission discrète réussie : touche « Mission réussie », ta cible confirme sur son téléphone. Photo : envoie-la ici. Quiz : écris ta réponse, Pierre corrige après la soirée.</div>';
   return h;
 }
 function reqPending(i){var f=false;Object.keys(S.req||{}).forEach(function(k){var r=S.req[k];if(r&&r.from===ui.me&&r.idx===i&&r.st==="pending"&&r.target===tgt(ui.me,i))f=true;});return f;}
@@ -557,7 +557,7 @@ function missionCard(m,i){
     else if(ui.busy["p"+i]){body='<p class="status"><b>Envoi en cours...</b> garde la page ouverte.</p>';}
     else body=open?'<div class="row"><label class="btn primary small filebtn">Envoyer la photo<input type="file" accept="image/*" data-a="photo" data-i="'+i+'"></label></div>'+absentLink():'';
   }else{
-    if(st==="ans"){cls+=" done has-stamp";stamp='<span class="stamp ok">Répondu</span>';body='<p class="status">Ta réponse : <b>'+esc(s.ans)+'</b>. Pierre corrige demain.</p>';}
+    if(st==="ans"){cls+=" done has-stamp";stamp='<span class="stamp ok">Répondu</span>';body='<p class="status">Ta réponse : <b>'+esc(s.ans)+'</b>. Pierre corrige après la soirée.</p>';}
     else body=open?'<textarea class="field" id="quiz-'+i+'" data-a="quiz-input" data-i="'+i+'" placeholder="Ta réponse (une seule tentative)">'+esc(ui.quizDraft[i]||"")+'</textarea><div class="row"><button class="btn primary small" data-a="quiz" data-i="'+i+'">Envoyer ma réponse</button></div>':'';
   }
   return '<article class="'+cls+'"><div class="top"><span class="code">'+code(m,i)+'</span><span class="tag c-'+m.cat+'">'+CAT[m.cat]+'</span><span class="pts">'+(jk(ui.me,"double")&&jk(ui.me,"double").idx===i?'×2 · ':'')+(jk(ui.me,"bouclier")&&jk(ui.me,"bouclier").idx===i?'🛡 · ':'')+PTS[m.cat]+' pt'+(PTS[m.cat]>1?'s':'')+'</span></div><p class="txt">'+mtext(ui.me,i)+'</p>'+(reassigned&&!DONE_ST[st]?'<p class="how">Nouvelle cible : la précédente n\'est pas là.</p>':'')+body+stamp+'</article>';
@@ -609,13 +609,13 @@ function rulesHtml(){
     '<div class="rule"><h3>Huit missions, deux temps</h3><p>Quatre à l\'apéro, quatre au resto. Celles du resto s\'ouvrent à 20h40. Fais-les dans l\'ordre que tu veux.</p></div>'+
     '<div class="rule"><h3>Secret absolu</h3><p>Ne montre tes missions à personne. Ta cible ne doit pas comprendre ce que tu manigances.</p></div>'+
     '<div class="rule"><h3>Mission discrète</h3><p>Réussie ? Touche « Mission réussie » : ta cible reçoit la mission sur son téléphone et confirme si c\'est vrai.</p></div>'+
-    '<div class="rule"><h3>Photo et quiz</h3><p>Envoie ta photo directement ici. Pour le quiz, écris ta réponse : une seule tentative, Pierre corrige demain.</p></div>'+
+    '<div class="rule"><h3>Photo et quiz</h3><p>Envoie ta photo directement ici. Pour le quiz, écris ta réponse : une seule tentative, Pierre corrige après la soirée.</p></div>'+
     '<div class="rule"><h3>Démasque tes chasseurs</h3><p>Onglet « Démasquer » : choisis qui te vise et quelle mission dans la liste. L\'appli vérifie seule. Juste : +1 pour toi et sa mission est grillée. Faux : -1.</p></div>'+
     '<div class="rule"><h3>Jokers</h3><p>Onglet « Jokers », chacun utilisable une fois. Gratuits : Échange (nouvelle mission) et Espion (savoir qui te vise). Payants, 1 point chacun : Double (mission à points doubles), Bouclier (protège une mission) et Vol (retire 3 points à quelqu\'un).</p></div>'+
     '<div class="rule"><h3>Ta cible n\'est pas là ?</h3><p>Touche « n\'est pas là ? » sous la mission. Pierre vérifie et ta mission passe sur quelqu\'un de présent.</p></div>'+
     '<div class="rule"><h3>Surprise à 22h</h3><p>Une mission flash apparaît chez tout le monde. Les 3 premiers validés gagnent 3 points.</p></div>'+
     '<div class="rule"><h3>Fin des missions à 2h</h3><p>Après 2h du matin, plus de nouvelles missions, photos ou jokers. Les confirmations restent possibles.</p></div>'+
-    '<div class="rule"><h3>Résultat demain</h3><p>Le classement reste secret. Pierre vous enverra un message quand le grand gagnant sera dévoilé ici même.</p></div></section>';
+    '<div class="rule"><h3>Le résultat</h3><p>Le classement reste secret. Pierre vous enverra un message quand le grand gagnant sera dévoilé ici même.</p></div></section>';
 }
 
 function renderMJ(){
