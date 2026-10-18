@@ -620,7 +620,7 @@ function rulesHtml(){
 
 function renderMJ(){
   var h='<div class="wrap"><div class="mjbar"><span class="tag">Maître du jeu</span><button class="btn ghost small" data-a="mj-exit">Vue joueur</button></div>';
-  h+='<div class="tabs" role="tablist"><button role="tab" aria-selected="'+(ui.mjTab==="soiree")+'" data-a="mjtab" data-t="soiree">Soirée</button><button role="tab" aria-selected="'+(ui.mjTab==="correction")+'" data-a="mjtab" data-t="correction">Correction</button><button role="tab" aria-selected="'+(ui.mjTab==="classement")+'" data-a="mjtab" data-t="classement">Classement</button></div>';
+  h+='<div class="tabs" role="tablist"><button role="tab" aria-selected="'+(ui.mjTab==="soiree")+'" data-a="mjtab" data-t="soiree">Soirée'+(allPending().length?' ('+allPending().length+')':'')+'</button><button role="tab" aria-selected="'+(ui.mjTab==="correction")+'" data-a="mjtab" data-t="correction">Correction</button><button role="tab" aria-selected="'+(ui.mjTab==="classement")+'" data-a="mjtab" data-t="classement">Classement</button></div>';
   if(ui.mjTab==="correction")h+=mjCorrection();
   else if(ui.mjTab==="classement")h+=mjClassement();
   else h+=mjSoiree();
@@ -635,8 +635,26 @@ function mjCodes(){
   }).join("");
   return h+'</section>';
 }
+function allPending(){
+  var l=[];
+  P.forEach(function(p){
+    p.missions.forEach(function(m,i){var s=mst(p.id,i);if(m.cat==="disc"&&s.st==="claim")l.push({pid:p.id,k:key(i),t:tgt(p.id,i),txt:mtext(p.id,i),at:s.at||0});});
+    var f=flashSt(p.id);if(f.st==="claim")l.push({pid:p.id,k:"flash",t:flashTgt(p.id),txt:"Mission flash : "+flashText(p.id),at:f.at||0});
+  });
+  return l.sort(function(a,b){return a.at-b.at;});
+}
+function mjPendingHtml(){
+  var l=allPending(),h='<section class="box" style="border-color:'+(l.length?'var(--gold)':'var(--line)')+'"><h3>Confirmations en attente'+(l.length?' ('+l.length+')':'')+'</h3>';
+  if(!l.length)return h+'<p class="sub">Aucune. Toutes les missions déclarées ont reçu une réponse.</p></section>';
+  h+='<p class="sub">Missions déclarées réussies mais jamais confirmées par la cible. Tranche toi-même.</p>';
+  h+=l.map(function(x){
+    return '<div class="alert"><p style="font-size:15px"><strong>'+esc(nameOf(x.pid))+'</strong> sur <strong>'+esc(nameOf(x.t))+'</strong></p><p class="quote">'+x.txt+'</p><div class="row"><button class="btn ok small" data-a="mj-ok" data-id="'+x.pid+'" data-k="'+x.k+'">Valider</button><button class="btn ghost small" data-a="mj-ko" data-id="'+x.pid+'" data-k="'+x.k+'">Refuser</button></div></div>';
+  }).join("");
+  h+=ui.confirmAll?'<div class="row"><button class="btn ok small" data-a="mj-all-yes">Oui, tout valider ('+l.length+')</button><button class="btn ghost small" data-a="mj-all-no">Annuler</button></div>':'<div class="row"><button class="btn small" data-a="mj-all">Tout valider</button></div>';
+  return h+'</section>';
+}
 function mjSoiree(){
-  var h=mjCodes(),reqs=Object.keys(S.req||{}).map(function(k){return {k:k,r:S.req[k]};}).filter(function(x){return x.r&&x.r.st==="pending";});
+  var h=mjPendingHtml()+mjCodes(),reqs=Object.keys(S.req||{}).map(function(k){return {k:k,r:S.req[k]};}).filter(function(x){return x.r&&x.r.st==="pending";});
   h+='<section class="box"><h3>Demandes d\'absence'+(reqs.length?' ('+reqs.length+')':'')+'</h3>';
   if(!reqs.length)h+='<p class="sub">Aucune demande. Tu peux profiter de ta soirée.</p>';
   reqs.forEach(function(x){
@@ -682,7 +700,8 @@ function mjCorrection(){
   return h;
 }
 function mjClassement(){
-  var list=ranking(),h='';
+  var list=ranking(),h='',np=allPending().length;
+  if(np)h+='<div class="banner" style="border-color:var(--gold);color:var(--gold)">⚠️ '+np+' confirmation'+(np>1?'s':'')+' en attente : le classement peut encore bouger. Va dans l\'onglet Soirée pour trancher.</div>';
   var top=list.filter(function(x){return x.rank===1;});
   if(top.length>1&&top[0].s.pts>0)h+='<div class="banner warn">Égalité en tête : '+top.map(function(x){return esc(x.p.name);}).join(", ")+'. Départage-les avec un point bonus avant de révéler.</div>';
   h+=boardHtml(list,true);
@@ -732,6 +751,10 @@ app.addEventListener("click",function(e){
     case "mj-exit":ui.mj=false;history.replaceState(null,"",location.pathname);break;
     case "mjtab":ui.mjTab=b.getAttribute("data-t");break;
     case "req-ok":markAbsent(id);return;
+    case "mj-ok":case "mj-ko":{var cur=k==="flash"?flashSt(id):mst(id,+k.slice(1));if(cur.st!=="claim"){toast("Déjà traitée");render(true);return;}var u7={};u7["m/"+id+"/"+k]={st:a==="mj-ok"?"ok":"denied",at:cur.at||now(),by:"mj"};write(u7,a==="mj-ok"?"Mission validée":"Mission refusée");return;}
+    case "mj-all":ui.confirmAll=true;break;
+    case "mj-all-no":ui.confirmAll=false;break;
+    case "mj-all-yes":{ui.confirmAll=false;var u8={},n8=0;allPending().forEach(function(x){var c8=x.k==="flash"?flashSt(x.pid):mst(x.pid,+x.k.slice(1));u8["m/"+x.pid+"/"+x.k]={st:"ok",at:c8.at||now(),by:"mj"};n8++;});if(n8)write(u8,n8+" mission"+(n8>1?"s":"")+" validée"+(n8>1?"s":""));return;}
     case "req-ko":var u0={};u0["req/"+k+"/st"]="ko";write(u0,"Demande refusée");return;
     case "pres":if(S.absent&&S.absent[id]){var u1={};u1["absent/"+id]=null;write(u1,nameOf(id)+" de nouveau présent(e)");return;}ui.confirmAbs=id;break;
     case "abs-yes":var A=ui.confirmAbs;ui.confirmAbs=null;markAbsent(A);return;
